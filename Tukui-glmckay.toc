@@ -1,0 +1,11 @@
+## Interface: 70300
+## Title: |cffC495DDTukui-glmckay|r
+## Notes: glmckay's Tukui edit
+## Author: glmckay
+## RequiredDeps: Tukui
+
+
+Config\Init.xml
+Medias\Medias.lua
+Core\Init.xml
+Modules\Init.xml
