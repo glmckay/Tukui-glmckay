@@ -11,12 +11,16 @@ Express12:SetFont(C["Medias"].Express, 12, "THINOUTLINE")
 local Express13 = CreateFont("Express13")
 Express13:SetFont(C["Medias"].Express, 13, "THINOUTLINE")
 
+local Express14 = CreateFont("Express14")
+Express14:SetFont(C["Medias"].Express, 14, "THINOUTLINE")
+
 TukuiMedia:RegisterFont("Express 11", "Express11")
 TukuiMedia:RegisterFont("Express 12", "Express12")
 TukuiMedia:RegisterFont("Express 13", "Express13")
+TukuiMedia:RegisterFont("Express 14", "Express14")
 
 
--- Register some stuff with sharedmedia if it gets loads
+-- Register some stuff with sharedmedia if it gets loaded
 local MediaLoader = CreateFrame("Frame", nil, UIParent)
 local function RegisterSharedMedia()
     if (not LibStub) then return end

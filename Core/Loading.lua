@@ -15,4 +15,3 @@ end
 
 Loading:SetScript("OnEvent", Loading.OnEvent)
 
--- hooksecurefunc(Loading, "OnEvent", LoadExtraModules)

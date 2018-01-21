@@ -1,8 +1,8 @@
 local T, C, L = Tukui:unpack()
 
 
-C["General"]["BackdropColor"] = {0.1, 0.1, 0.1}
-C["General"]["BorderColor"] = {0.3, 0.3, 0.3}
+C["General"]["BackdropColor"] = {0.15, 0.15, 0.15}
+C["General"]["BorderColor"] = {0, 0, 0}
 C["General"]["BorderSize"] = 2                      -- Added
 
 C["ActionBars"]["NormalButtonSize"] = 30
@@ -23,7 +23,7 @@ C["Chat"]["TabFont"] = "Express 11"
 
 C["Cooldowns"]["Font"] = "Express 11"
 
-C["DataTexts"]["Font"] = "Express 11"
+C["DataTexts"]["Font"] = "Express 12"
 C["DataTexts"]["Time24HrFormat"] = true
 
 C["Misc"]["AutoInviteEnable"] = true
