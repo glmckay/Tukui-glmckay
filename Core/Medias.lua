@@ -24,7 +24,7 @@ TukuiMedia:RegisterFont("Express 14", "Express14")
 local MediaLoader = CreateFrame("Frame", nil, UIParent)
 local function RegisterSharedMedia()
     if (not LibStub) then return end
-    local media = LibStub("LibSharedMedia-3.0")
+    local media = LibStub("LibSharedMedia-3.0", "silent")
     if (media) then
         media:Register("font", "Expressway", C["Medias"]["Express"])
         media:Register("statusbar", "Blank", C["Medias"]["Blank"])
