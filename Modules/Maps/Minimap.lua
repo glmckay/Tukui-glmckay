@@ -23,7 +23,7 @@ local function EditZoneAndCoords(self)
 end
 
 function Minimap:EnableEdits()
-    self:Size(150,150)
+    self:Size(C["Maps"]["MinimapSize"])
 end
 
 hooksecurefunc(Minimap, "AddZoneAndCoords", EditZoneAndCoords)
