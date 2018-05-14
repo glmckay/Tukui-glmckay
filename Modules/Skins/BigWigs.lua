@@ -1,4 +1,6 @@
 local T, C, L = Tukui:unpack()
+local barPlugin = nil
+
 
 local borderSize = C.General.BorderSize
 
@@ -10,6 +12,30 @@ local BarBackdrop = {
                right =  -T.Scale(borderSize) },
 }
 
+local function RemoveStyle(bar)
+    bar:SetHeight(14)
+    bar.candyBarBackdrop:Hide()
+
+    local tex = bar:Get("bigwigs:restoreicon")
+    if tex then
+        local icon = bar.candyBarIconFrame
+        icon:ClearAllPoints()
+        icon:SetPoint("TOPLEFT")
+        icon:SetPoint("BOTTOMLEFT")
+        bar:SetIcon(tex)
+
+        bar.candyBarIconFrameBackdrop:Hide()
+    end
+
+    bar.candyBarDuration:ClearAllPoints()
+    bar.candyBarDuration:SetPoint("TOPLEFT", bar.candyBarBar, "TOPLEFT", 2, 0)
+    bar.candyBarDuration:SetPoint("BOTTOMRIGHT", bar.candyBarBar, "BOTTOMRIGHT", -2, 0)
+
+    bar.candyBarLabel:ClearAllPoints()
+    bar.candyBarLabel:SetPoint("TOPLEFT", bar.candyBarBar, "TOPLEFT", 2, 0)
+    bar.candyBarLabel:SetPoint("BOTTOMRIGHT", bar.candyBarBar, "BOTTOMRIGHT", -2, 0)
+end
+
 local function StyleBar(bar)
     bar:Height(18)
 
@@ -20,7 +46,7 @@ local function StyleBar(bar)
     bd:SetAllPoints()
     bd:Show()
 
-    if (bar.candyBarIconFrame) then
+    if barPlugin.db.profile.icon then
         local icon = bar.candyBarIconFrame
         local tex = icon.icon
         bar:SetIcon(nil)
@@ -36,24 +62,23 @@ local function StyleBar(bar)
         iconBd:SetBackdropBorderColor(0, 0, 0, 1)
 
         iconBd:SetAllPoints(icon)
-        iconBd:Show()
     end
 end
 
 local f = CreateFrame("Frame")
 local function registerMyStyle()
     if not BigWigs then return end
-    local bars = BigWigs:GetPlugin("Bars", true)
-    if not bars then return end
+    barPlugin = BigWigs:GetPlugin("Bars", true)
+    if not barPlugin then return end
     f:UnregisterEvent("ADDON_LOADED")
     f:UnregisterEvent("PLAYER_LOGIN")
-    bars:RegisterBarStyle("identifier", {
+    barPlugin:RegisterBarStyle("identifier", {
         apiVersion = 1,
         version = 1,
         GetSpacing = function(bar) return 5 end,
         ApplyStyle = StyleBar,
-        BarStopped = function(bar) end,
-        GetStyleName = function() return "My Style" end,
+        BarStopped = RemoveStyle,
+        GetStyleName = function() return "Tukui-glmckay" end,
     })
 end
 f:RegisterEvent("ADDON_LOADED")

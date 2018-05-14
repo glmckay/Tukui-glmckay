@@ -5,7 +5,7 @@ local DummyFcn = function() end
 
 local ufFont = T.GetFont(C["UnitFrames"].Font)
 
-UnitFrames.PetTotWidth = 80
+UnitFrames.PetTotWidth = 90
 
 
 local function EditPetTotCommon(self)
@@ -13,13 +13,12 @@ local function EditPetTotCommon(self)
 
     self.Panel:Kill()
     self.Shadow:Kill()
-    self:SetBackdrop(UnitFrames.SkinnedBackdrop)
+    self:SetTemplate()
     self:SetBackdropColor(0, 0, 0)
 
     -- Health
     Health:ClearAllPoints()
-    Health:Point("TOPLEFT", self)
-    Health:Point("BOTTOMRIGHT", self)
+    Health:SetInside(self)
 
     -- Create new Name since we killed the panel
     local Name = Health:CreateFontString(nil, "OVERLAY")
@@ -30,15 +29,18 @@ local function EditPetTotCommon(self)
     UnitFrames.UpdateNamePosition = DummyFcn
 
     if (C.UnitFrames.DarkTheme) then
+        Health:SetStatusBarColor(.25, .25, .25)
         self:Tag(Name, "[Tukui:GetNameColor][Tukui:NameShort]")
     else
+        Name:SetTextColor(.9, .9, 9)
         self:Tag(Name, "[Tukui:NameShort]")
     end
     self.Name = Name
 
-    if C.UnitFrames.DarkTheme then
-        Health:SetStatusBarColor(.25, .25, .25)
-    end
+    local RaidIcon = self.RaidIcon
+    RaidIcon:ClearAllPoints()
+    RaidIcon:Point("CENTER", self, "BOTTOM", 0, 12)
+
 end
 
 

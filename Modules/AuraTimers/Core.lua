@@ -45,12 +45,12 @@ local function UpdateIcon(self, elapsed)
         end
         self.Elapsed = 0
         if self.TimeLeft > 0 then
-            local time = T.FormatTime(self.timeLeft)
-            self.Remaining:SetText(time)
+            local time = T.FormatTime(self.TimeLeft)
+            self.Time:SetText(time)
             if self.TimeLeft <= 5 then
-                self.Remaining:SetTextColor(0.99, 0.31, 0.31)
+                self.Time:SetTextColor(0.99, 0.31, 0.31)
             else
-                self.Remaining:SetTextColor(1, 1, 1)
+                self.Time:SetTextColor(1, 1, 1)
             end
         elseif not self.IgnoreTime then
             if (self.OnFinished) then
@@ -113,10 +113,10 @@ local function UpdateIconSpellInfo(self, spell)
     end
 
     if (SpellChanged == true or self.EndTime ~= spell.EndTime) then
-        self.EndTime = endTime
-        self.Bar:SetCooldown(endTime - duration, duration)
+        self.EndTime = spell.EndTime
+        self.CD:SetCooldown(spell.EndTime - spell.Duration, spell.Duration)
         self.Finished = false
-        self.timeDirty = true
+        self.TimeDirty = true
     end
 end
 
@@ -188,37 +188,50 @@ end
 
 
 local function SpawnIconTimer(self)
-    local Frame = CreateFrame("Frame", nil, self)
-    Frame:Size(self.Width, self.Height)
-
-    local Button = CreateFrame("Frame", nil, Frame)
-    Button:SetAllPoints()
+    local Button = CreateFrame("Frame", nil, self)
+    Button:Size(self.Width, self.Height)
     Button:SetBackdrop(AuraTimers.Backdrop)
     Button:SetBackdropColor(0, 0, 0)
+
+    -- local Button = CreateFrame("Frame", nil, Frame)
+    -- Button:SetAllPoints()
+    -- Button:SetBackdrop(AuraTimers.Backdrop)
+    -- Button:SetBackdropColor(0, 0, 0)
 
     local Icon = Button:CreateTexture(nil, "ARTWORK")
     Icon:SetAllPoints()
     Icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 
-    local CD = CreateFrame("Cooldown", nil, Frame)
-    CD:SetAllPoints(Frame)
+    local CD = CreateFrame("Cooldown", nil, Button, "CooldownFrameTemplate")
+    CD:SetAllPoints(Button)
     CD:SetReverse(true)
-    cd.noCooldownCount = true -- hide since we make our own
+    CD.noCooldownCount = true -- hide since we make our own
+    CD:SetHideCountdownNumbers(true)
 
-    local Remaining = Frame:CreateFontString(nil, "OVERLAY")
-    Remaining:SetFontObject(self.Font)
-    Remaining:Point("CENTER", Frame)
+    local OverlayFrame = CreateFrame("Frame", nil, Button)
+    OverlayFrame:SetFrameLevel(CD:GetFrameLevel() + 1)
 
-    Frame.Button = Button
-    Frame.Icon = Icon
-    Frame.CD = CD
-    Frame.Remaining = Remaining
+    local Time = OverlayFrame:CreateFontString(nil, "OVERLAY")
+    Time:SetFontObject(self.Font)
+    Time:Point("CENTER", Button)
 
-    Frame.UpdateSpellInfo = UpdateIconSpellInfo
-    Frame.OnFinished = OnTimerFinished
-    Frame:SetScript("OnUpdate", UpdateIcon)
+    -- Frame:SetBackdrop({})
+    -- Button:SetAlpha(0)
 
-    return Frame
+    Button.OverlayFrame = OverlayFrame
+    Button.Icon = Icon
+    Button.CD = CD
+    Button.Time = Time
+
+    Button.EndTime = 0
+    Button.IsActive = false
+    Button:Hide()
+
+    Button.UpdateSpellInfo = UpdateIconSpellInfo
+    Button.OnFinished = OnTimerFinished
+    Button:SetScript("OnUpdate", UpdateIcon)
+
+    return Button
 end
 
 
@@ -250,6 +263,9 @@ end
 
 local function ClearSpell(self, spell)
     spell.IsActive = false
+    if (self.AlwaysShow == true) then
+        return
+    end
 
     for i, Timer in ipairs(self.ActiveTimers) do
         if (Timer.Spell == spell) then
@@ -265,6 +281,9 @@ end
 
 local function ClearTimer(self, timerToClear)
     timerToClear.Spell.IsActive = false
+    if (self.AlwaysShow == true) then
+        return
+    end
 
     for i, Timer in ipairs(self.ActiveTimers) do
         if (timerToClear == Timer) then
@@ -350,7 +369,7 @@ local function CheckCooldowns(self)
     for _,Spell in ipairs(self.Cooldowns) do
         local StartTime, Duration
         if (Spell.SpellId) then
-            StartTime, Duration = GetSpellCooldown(Spell.SpellId)
+            _, _, StartTime, Duration = GetSpellCooldown(Spell.SpellId)
         else
             StartTime, Duration = GetInventoryItemCooldown("player", Spell.SlotId)
         end
@@ -389,6 +408,16 @@ local function CheckChargeCooldowns(self)
 end
 
 
+local function CheckTotem(self, slot)
+    haveTotem, totemName, startTime, duration = GetTotemInfo(slot)
+    print("TotemInfo:")
+    print(haveTotem)
+    print(totemName)
+    print(startTime)
+    print(duration)
+end
+
+
 local function CheckCombatLog(self, event, spellID, spellName)
     for i,Spell in ipairs(self.CombatLog) do
         if event == Spell.Event and spellID == Spell.SpellId then
@@ -420,6 +449,9 @@ local function HeaderOnEvent(self, event, ...)
         if (unitId == "player") then
             self:CheckAuras("pet")
         end
+    -- elseif (event == "PLAYER_TOTEM_UPDATE") then
+    --     local slot = ...
+    --     CheckTotem(self, slot)
     elseif (event == "COMBAT_LOG_EVENT_UNFILTERED") then
         local _,event,_,_,sourceName,_,_,_,destName,_,_,spellID,spellName = ...
         if sourceName == playerName and destName == playerName then
@@ -437,6 +469,9 @@ local function CheckAll(self)
     end
     self:CheckCooldowns()
     self:CheckChargeCooldowns()
+    -- for slot = 1,MAX_TOTEMS do
+    --     self:CheckTotem(slot)
+    -- end
 end
 
 
@@ -461,6 +496,8 @@ local function EnableHeader(self)
     if #self.ChargeCooldowns > 0 then
         self:RegisterEvent("SPELL_UPDATE_CHARGES")
     end
+
+    self:RegisterEvent("PLAYER_TOTEM_UPDATE")
 
     if #self.CombatLog > 0 then
         self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -658,6 +695,8 @@ function AuraTimers:ToggleSpecTimers()
     if (tree) then
         spec = select(2, GetSpecializationInfo(tree))
     end
+
+    print("Loading AuraTimers for ".. spec)
 
     for _,Header in ipairs(self.Headers) do
         if (Header.AllowedSpecs and Header.AllowedSpecs[spec]) then

@@ -1,24 +1,19 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 
     <Script file="ActionBars\Core.lua"/>
-
 	<Script file="AuraTimers\Core.lua"/>
-
     <Script file="DataTexts\Core.lua"/>
-
     <Script file="Maps\Minimap.lua"/>
-
     <Script file="Miscellaneous\Experience.lua"/>
-
     <Script file="Panels\Core.lua"/>
-
     <Script file="Skins\BigWigs.lua"/>
-
     <Script file="UnitFrames\Core.lua"/>
     <Script file="UnitFrames\Units\Player_Target.lua"/>
     <Script file="UnitFrames\Units\Pet_Tot.lua"/>
     <Script file="UnitFrames\Units\Other.lua"/>
+    <Script file="UnitFrames\Groups\Party.lua"/>
     <Script file="UnitFrames\Groups\Raid.lua"/>
+    <Script file="UnitFrames\Classes\DeathKnight.lua"/>
     <Script file="UnitFrames\Classes\Priest.lua"/>
     <Script file="UnitFrames\Classes\Shaman.lua"/>
     <Script file="UnitFrames\Classes\Warlock.lua"/>

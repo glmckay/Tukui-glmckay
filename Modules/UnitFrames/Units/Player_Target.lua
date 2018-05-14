@@ -1,5 +1,6 @@
 local T, C, L = Tukui:unpack()
 
+local Panels = T.Panels
 local UnitFrames = T.UnitFrames
 local DummyFcn = function() end
 
@@ -13,16 +14,17 @@ local UnitPowerType = UnitPowerType
 
 local ufFont = T.GetFont(C["UnitFrames"].Font)
 
-local borderSize = C.General.BorderSize
-local auraSize = 25
+local BorderSize = C.General.BorderSize
+local ufSpacing = C.General.FrameSpacing
+local CenterBarSize = (C.ActionBars.CenterButtonSize + ufSpacing) * 6 - ufSpacing
+local auraSize = C.ActionBars.PlayerButtonSize
 local aurasPerRow = 8
-local ufSpacing = 2*borderSize + 1
-local ufWidth = (ufSpacing + auraSize)*aurasPerRow - 1
-local ufHeight = UnitFrames.ufHeight
+local ufWidth = (ufSpacing + auraSize)*aurasPerRow - ufSpacing
+local ufHeight = UnitFrames.FrameHeight
+local healthHeight = ufHeight - 2*BorderSize
 local powerHeight = 3
 
 UnitFrames.PlayerTargetWidth = ufWidth
-
 
 
 local function PlayerPostUpdateHealth(self, unit, min, max)
@@ -104,8 +106,8 @@ local function EditPlayerTargetCommon(self)
 
     self.Panel:Kill()
     self.Shadow:Kill()
-    self:SetBackdrop(UnitFrames.SkinnedBackdrop)
-    self:SetBackdropColor(0, 0, 0)
+    self:SetTemplate()
+    self:SetBackdropColor(0, 0, 0) -- so the space between health and power is black
 
     -- Frame to overlay text above heal prediction
     local OverlayFrame = CreateFrame("Frame", nil, self)
@@ -114,8 +116,8 @@ local function EditPlayerTargetCommon(self)
 
     -- Health
     Health:ClearAllPoints()
-    Health:Point("TOPLEFT", self)
-    Health:Point("BOTTOMRIGHT", self, 0, powerHeight + borderSize)
+    Health:Point("TOPLEFT", self, BorderSize, -BorderSize)
+    Health:Point("TOPRIGHT", self, -BorderSize, -BorderSize)
 
     Health.Value:SetParent(OverlayFrame)
     Health.Value:ClearAllPoints()
@@ -124,17 +126,19 @@ local function EditPlayerTargetCommon(self)
     -- Power
     Power:ClearAllPoints()
     Power:Height(powerHeight)
-    Power:Point("BOTTOMLEFT", self)
-    Power:Point("BOTTOMRIGHT", self)
+    Power:Point("BOTTOMLEFT", self, BorderSize, BorderSize)
+    Power:Point("BOTTOMRIGHT", self, -BorderSize, BorderSize)
 
     Power.Value:SetParent(OverlayFrame)
 
     -- Cast bar
     CastBar:ClearAllPoints()
-    CastBar:Size(ufWidth, ufHeight)
-    CastBar:SetBackdrop(UnitFrames.SkinnedBackdrop)
-    CastBar:SetBackdropColor(0, 0, 0)
-    CastBar.Background:Kill()
+    CastBar:Size(ufWidth - 2*BorderSize, ufHeight - 2*BorderSize)
+    CastBar:SetBackdrop({})
+    CastBar:CreateBackdrop()
+    if (CastBar.Shadow) then
+        CastBar.Shadow:Kill()
+    end
 
     CastBar.Time:ClearAllPoints()
     CastBar.Time:Point("RIGHT", CastBar, "RIGHT", -2, 1)
@@ -152,7 +156,7 @@ local function EditPlayerTargetCommon(self)
 
         for name,bar in pairs(HealPrediction) do
             if (name ~= 'maxOverflow') then
-                bar:Width(ufWidth)
+                bar:Width(ufWidth - 2*BorderSize)
             end
         end
     end
@@ -171,13 +175,8 @@ local function EditPlayer(self)
     local CastBar = self.Castbar
     local OverlayFrame = self.OverlayFrame
 
-
-    local PowerDisplayAnchor = CreateFrame("Frame", nil, UIParent)
-    PowerDisplayAnchor:Size(ufWidth, ufHeight)
-    PowerDisplayAnchor:Point("TOP", UIParent, "CENTER", 0, -280)
-    self.PowerDisplayAnchor = PowerDisplayAnchor
-
     -- Health
+    Health:Height(healthHeight - powerHeight - BorderSize)
     Health.PostUpdate = PlayerPostUpdateHealth
 
     -- Power
@@ -185,14 +184,14 @@ local function EditPlayer(self)
     Power.Value:Point("LEFT", Health, "TOPLEFT", 2, 2)
     Power.PostUpdate = PlayerPostUpdatePower
 
+    Power.Prediction:Width(ufWidth - 2*BorderSize)
+
     -- If Power bar is unlinked from the frame
     if (C.UnitFrames.UnlinkPower) then
-        Health:Point("BOTTOMRIGHT", self)
-
-        Power:SetParent(PowerDisplayAnchor)
-        Power:SetAllPoints(PowerDisplayAnchor)
-        Power:SetBackdrop(UnitFrames.SkinnedBackdrop)
-        Power:SetBackdropColor(0, 0, 0)
+        Power:ClearAllPoints()
+        Power:Size(CenterBarSize, ufHeight - 2*BorderSize)
+        Power:Point("CENTER", Panels.UnitFrameAnchor)
+        Power:CreateBackdrop()
 
         -- Create a new string for the detached power bar (the usual string will stay on the frame when out of combat)
         Power.ExtraValue = Power:CreateFontString(nil, "OVERLAY")
@@ -207,15 +206,35 @@ local function EditPlayer(self)
     -- AdditionalPower
     AdditionalPower:ClearAllPoints()
     AdditionalPower:Height(powerHeight)
-    AdditionalPower:Point("BOTTOMLEFT", Health, "BOTTOMLEFT")
-    AdditionalPower:Point("BOTTOMRIGHT", Health, "BOTTOMRIGHT")
-    AdditionalPower:SetBackdrop(UnitFrames.SkinnedBackdrop)
-    AdditionalPower:SetBackdropColor(0, 0, 0)
-    AdditionalPower:SetBackdropBorderColor(0, 0, 0)
+    AdditionalPower:Point("BOTTOMLEFT", Power, "TOPLEFT", 0, BorderSize)
+    AdditionalPower:Point("BOTTOMRIGHT", Power, "TOPRIGHT", 0, BorderSize)
+
+    -- Fix health height when shown/hidden
+    if (C.UnitFrames.UnlinkPower) then
+        AdditionalPower:Point("BOTTOMLEFT", self, BorderSize, BorderSize)
+        AdditionalPower:Point("BOTTOMRIGHT", self, -BorderSize, BorderSize)
+
+        AdditionalPower:SetScript("OnShow", function()
+            Health:Height(healthHeight - powerHeight - BorderSize)
+        end)
+        AdditionalPower:SetScript("OnHide", function()
+            Health:Height(healthHeight)
+        end)
+    else
+        AdditionalPower:SetScript("OnShow", function()
+            Health:Height(healthHeight - 2*(powerHeight + BorderSize))
+        end)
+        AdditionalPower:SetScript("OnHide", function()
+            Health:Height(healthHeight - powerHeight - BorderSize)
+        end)
+    end
 
     -- CastBar
+    CastBar:ClearAllPoints()
     if (C.UnitFrames.UnlinkCastBar) then
-        CastBar:Point("BOTTOM", UIParent, "CENTER", 0, -275)
+        CastBar:Size(CenterBarSize, ufHeight - 2*BorderSize)
+        CastBar:Point("CENTER", Panels.UnitFrameAnchor)
+        CastBar:SetFrameLevel(Power:GetFrameLevel() + 3)
     else
         CastBar:Point("TOP", self, "BOTTOM", 0, -ufSpacing)
     end
@@ -233,16 +252,23 @@ local function EditPlayer(self)
 
     Combat.PostUpdate = function(self, inCombat)
         if inCombat then
-            PowerDisplayAnchor:Show()
+            Power:Show()
             Power.Value:Hide()
         else
-            PowerDisplayAnchor:Hide()
+            Power:Hide()
             Power.Value:Show()
         end
     end
 
     self.Combat:Kill()
     self.Combat = Combat
+
+    self.Leader:Kill()
+    self.Leader = nil
+
+    self.MasterLooter:Kill()
+    self.MasterLooter = nil
+
     if (UnitFrames.EditClassFeatures[T.MyClass]) then
         UnitFrames.EditClassFeatures[T.MyClass](self)
     end
@@ -257,10 +283,16 @@ local function EditTarget(self)
     local CastBar = self.Castbar
     local OverlayFrame = self.OverlayFrame
 
-    -- kill power value on target
+    Health:Height(healthHeight)
+
+    Power:SetScript("OnShow", function() Health:Height(healthHeight - powerHeight - BorderSize) end)
+    Power:SetScript("OnHide", function() Health:Height(healthHeight) end)
+
     if Power.Value then
         Power.Value:Kill()
     end
+    Power.Value = nil
+    Power.PostUpdate = nil
 
     -- Castbar
     if (C.UnitFrames.UnlinkCastBar) then
@@ -279,6 +311,7 @@ local function EditTarget(self)
     Name:Point("LEFT", Health, "TOPLEFT", 2, 2)
     Name:SetJustifyH("LEFT")
     Name:SetFontObject(ufFont)
+    Name:SetTextColor(.9,.9,.9)
 
     UnitFrames.UpdateNamePosition = DummyFcn
 
@@ -295,21 +328,24 @@ local function EditTarget(self)
         local Debuffs = self.Debuffs
         local ComboPoints = self.ComboPointsBar
 
-        Buffs:Point("BOTTOMLEFT", self, "TOPLEFT", 0, 5)
+        Buffs:Point("BOTTOMLEFT", self, "TOPLEFT", 0, 6)
         Buffs:SetFrameLevel(self:GetFrameLevel())
         Buffs:Height(auraSize)
         Buffs:Width(ufWidth)
         Buffs.size = T.Scale(auraSize)
-        Buffs.num = 32
-        Buffs.spacing = ufSpacing
+        Buffs.num = 24
+        Buffs.numRow = aurasPerRow
+        Buffs.spacing = T.Scale(ufSpacing)
 
-        Debuffs:Point("BOTTOMLEFT", buffs, "TOPLEFT", 0, 5)
+
+        Debuffs:Point("BOTTOMLEFT", buffs, "TOPLEFT", 0, 1) -- until  UpdateDebuffsHeaderPosition changes it
         Debuffs:SetFrameLevel(self:GetFrameLevel())
         Debuffs:Height(auraSize)
         Debuffs:Width(ufWidth)
         Debuffs.size = T.Scale(auraSize)
-        Debuffs.num = 32
-        Debuffs.Spacing = ufSpacing
+        Debuffs.num = 24
+        Debuffs.numRow = aurasPerRow
+        Debuffs.Spacing = T.Scale(ufSpacing)
 
         -- Fix combo point scripts moving the buffs
         ComboPoints:SetScript("OnShow", function(self)
@@ -321,6 +357,30 @@ local function EditTarget(self)
     end
 end
 
-
 hooksecurefunc(UnitFrames, "Player", EditPlayer)
 hooksecurefunc(UnitFrames, "Target", EditTarget)
+
+-- Show target power bar for players with mana
+function UnitFrames:CreateTargetPowerToggle(targetFrame)
+    local targetPowerCheck = CreateFrame("Frame", nil, UIParent)
+    targetPowerCheck.TargetFrame = targetFrame
+
+    targetPowerCheck:SetScript("OnEvent", function(self, event, arg)
+        if ((event == "PLAYER_TARGET_CHANGED" or arg == "target") and UnitIsPlayer("target")) then
+            local class = UnitClass("target")
+            pType, pToken = UnitPowerType("target")
+            if (pType == 0 and not (class == "Mage" or class == "Warlock")) then
+                self.TargetFrame.Power:Show()
+            else
+                self.TargetFrame.Power:Hide()
+            end
+        else
+            self.TargetFrame.Power:Hide()
+        end
+    end)
+    targetPowerCheck:RegisterEvent("UNIT_DISPLAYPOWER", togglepower)
+    targetPowerCheck:RegisterEvent("PLAYER_TARGET_CHANGED", togglepower)
+    targetPowerCheck:RegisterEvent("UNIT_MAXPOWER", togglepower)
+
+    self.TargetPowerCheck = targetPowerCheck
+end
