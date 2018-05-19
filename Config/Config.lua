@@ -16,6 +16,8 @@ C["ActionBars"]["ButtonSpacing"] = 1
 C["ActionBars"]["HideGrid"] = true
 
 C["Auras"]["Fonts"] = "Roboto 11"
+C["Auras"]["Size"] = 34
+C["Auras"]["Spacing"] = 3
 
 -- General options for the added AuraTimers module
 C["AuraTimers"] = {}
@@ -36,7 +38,7 @@ C["DataTexts"]["Font"] = "Roboto 12"
 C["DataTexts"]["Time24HrFormat"] = true
 
 C["Maps"] = {}
-C["Maps"]["MinimapSize"] = 180
+C["Maps"]["MinimapSize"] = 180                  -- Added (a couple things use this)
 
 C["Misc"]["AutoInviteEnable"] = true
 
