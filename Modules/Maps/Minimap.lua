@@ -1,9 +1,7 @@
 local T, C, L = Tukui:unpack()
 
-local Maps = T["Maps"]
-
--- Get rid of minimap datatext frames and set the minimap as the anchor for
---  a datatext at its bottom
+-- Overwrite this function to get rid of minimap datatext frames and set the
+--  minimap as the anchor for a datatext at its bottom
 function Minimap:AddMinimapDataTexts()
     T["Panels"].MinimapDataTextOne = self
 end
@@ -22,8 +20,11 @@ local function EditZoneAndCoords(self)
     Coords.Text:SetFont(C["Medias"].RobotoCondBold, 12, "THINOUTLINE")
 end
 
-function Minimap:EnableEdits()
-    self:Size(C["Maps"]["MinimapSize"])
+local TukuiAuras = T["Auras"]
+
+local function PositionMinimap()
+    Minimap:Size(C["Maps"]["MinimapSize"])
 end
 
 hooksecurefunc(Minimap, "AddZoneAndCoords", EditZoneAndCoords)
+hooksecurefunc(Minimap, "PositionMinimap", PositionMinimap)

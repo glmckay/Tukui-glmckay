@@ -2,6 +2,7 @@
 
     <Script file="ActionBars\Core.lua"/>
 	<Script file="AuraTimers\Core.lua"/>
+    <Script file="Auras\Headers.lua"/>
     <Script file="DataTexts\Core.lua"/>
     <Script file="Maps\Minimap.lua"/>
     <Script file="Miscellaneous\Experience.lua"/>

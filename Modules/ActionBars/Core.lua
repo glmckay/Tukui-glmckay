@@ -7,7 +7,7 @@ local FrameSpacing = C.General.FrameSpacing
 local BorderSize = C.General.BorderSize
 
 
-function ActionBars:EnableShiftPaging()
+local function EnableShiftPaging()
 --     local Bar1 = TukuiPanels.ActionBar1
 --     local Bar1StateHandler = CreateFrame("Frame", "TukuiBarStateHandler", UIParent, "SecureHandlerStateTemplate")
 
@@ -38,11 +38,11 @@ function ActionBars:EnableShiftPaging()
     actionBar1.GetBar = function()
         return string.gsub(oldGetBar(actionBar1), "bar:2", "mod:Shift][bar:2")
     end
-    self:UpdateBar1()
+    ActionBars:UpdateBar1()
 end
 
 
-function ActionBars:MiddleBar()
+local function MiddleBar()
     local actionBar2 = Panels.ActionBar2
     local actionBar4 = Panels.ActionBar4
 
@@ -86,17 +86,21 @@ function ActionBars:MiddleBar()
     RegisterStateDriver(actionBar4, "visibility", "[vehicleui][petbattle][overridebar][nocombat,nomod:shift]hide; show")
 end
 
+
 if (C["ActionBars"].HideGrid == true) then
     ActionBars.ShowGrid = function() end
 end
 
-function ActionBars:EnableEdits()
+
+-- The middle bar needs to be loaded after the panels are editted, (and we don't need to make changes while
+--  Tukui is loading) so we will make changes after all modules load
+local function EnableEdits()
     if (C["ActionBars"].HideGrid == true) then
         SetCVar("alwaysShowActionBars", 0)
     end
 
-    self:EnableShiftPaging()
-    self:MiddleBar()
+    EnableShiftPaging()
+    MiddleBar()
 end
 
--- hooksecurefunc(ActionBars, "Enable", EnableEdits)
+hooksecurefunc(ActionBars, "Enable", EnableEdits)

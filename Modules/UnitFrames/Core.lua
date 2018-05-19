@@ -342,6 +342,6 @@ end
 
 hooksecurefunc(UnitFrames, "CreateUnits", CreateUnits)
 hooksecurefunc(UnitFrames, "PostCreateAura", PostCreateAura)
--- hooksecurefunc(UnitFrames, "Enable", UnitFrames.EnableEdits)
+hooksecurefunc(UnitFrames, "Enable", UnitFrames.EnableEdits)
 
 
