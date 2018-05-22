@@ -15,6 +15,7 @@
     <Script file="UnitFrames\Groups\Party.lua"/>
     <Script file="UnitFrames\Groups\Raid.lua"/>
     <Script file="UnitFrames\Classes\DeathKnight.lua"/>
+    <Script file="UnitFrames\Classes\Monk.lua"/>
     <Script file="UnitFrames\Classes\Priest.lua"/>
     <Script file="UnitFrames\Classes\Shaman.lua"/>
     <Script file="UnitFrames\Classes\Warlock.lua"/>

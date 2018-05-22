@@ -3,18 +3,16 @@ local T, C, L = Tukui:unpack()
 local UnitFrames = T.UnitFrames
 local DummyFcn = function() end
 
-
-local ufFont = T.GetFont(C["UnitFrames"].Font)
-
-local ufSpacing = C.General.FrameSpacing
-local borderSize = C.General.BorderSize
-local ufHeight = UnitFrames.FrameHeight
-local powerHeight = 3
+local FrameSpacing = C.General.FrameSpacing
+local BorderSize = C.General.BorderSize
+local ufHeight = 30
+local powerHeight = 2
 
 UnitFrames.OtherWidth = 200
+UnitFrames.OtherHeight = ufHeight
 
 
-local function OtherPostUpdateHealth(self, unit, min, max)
+local function PostUpdateHealth(self, unit, min, max)
     if (not UnitIsConnected(unit) or UnitIsDead(unit) or UnitIsGhost(unit)) then
         if (not UnitIsConnected(unit)) then
             self.Value:SetText("|cffD7BEA5"..FRIENDS_LIST_OFFLINE.."|r")
@@ -23,17 +21,31 @@ local function OtherPostUpdateHealth(self, unit, min, max)
         elseif (UnitIsGhost(unit)) then
             self.Value:SetText("|cffD7BEA5"..L.UnitFrames.Ghost.."|r")
         end
-    elseif (unit) then
-        local r, g, b
-
-        if (strfind(unit, "boss%d") and min ~= max) then
-            r, g, b = T.ColorGradient(min, max, 0.69, 0.31, 0.31, 0.65, 0.63, 0.35, 0.33, 0.59, 0.33)
-            self.Value:SetFormattedText("|cff%02x%02x%02x%d%%|r", r * 255, g * 255, b * 255, floor(min / max * 100))
+    else
+        if (min ~= max) then
+            self.Value:SetFormattedText("%s - %s%%", UnitFrames.ShortValue(min), floor(min / max * 100))
         else
-            self.Value:SetText("|cff559655"..UnitFrames.ShortValue(max).."|r")
+            self.Value:SetText(UnitFrames.ShortValue(min))
+        end
+    end
+end
+
+
+local function BossPostUpdatePower(self, unit, min, max)
+    if (min > 0) then
+        if (self.LastAlpha ~= 1) then
+            local Parent = self:GetParent()
+            Parent.Health:Height(ufHeight - powerHeight - 3*BorderSize)
+            self:SetAlpha(1)
+            self.LastAlpha = 1
         end
     else
-        self.Value:SetText(" ")
+        if (self.LastAlpha ~= 0) then
+            local Parent = self:GetParent()
+            Parent.Health:Height(ufHeight - 2*BorderSize)
+            self:SetAlpha(0)
+            self.LastAlpha = 0
+        end
     end
 end
 
@@ -43,20 +55,14 @@ local function EditOtherFramesCommon(self)
     local Power = self.Power
     local Name = self.Name
 
-    self.Shadow:Kill()
     self:SetTemplate()
     self:SetBackdropColor(0, 0, 0)
 
     -- Health
-    Health:ClearAllPoints()
-    Health:Point("TOPLEFT", self, borderSize, -borderSize)
-    Health:Point("TOPRIGHT", self, -borderSize, -borderSize)
-    Health:Height(ufHeight - powerHeight - 3*borderSize)
-
     Health.Value:ClearAllPoints()
-    Health.Value:Point("RIGHT", Health, "TOPRIGHT", -2, 2)
+    Health.Value:Point("RIGHT", Health, "RIGHT", -2, 0)
 
-    Health.PostUpdate = OtherPostUpdateHealth
+    Health.PostUpdate = PostUpdateHealth
 
     if C.UnitFrames.DarkTheme then
         Health:SetStatusBarColor(.25, .25, .25)
@@ -64,23 +70,13 @@ local function EditOtherFramesCommon(self)
         Name:SetTextColor(.9, .9, .9)
     end
 
-    -- Power
-    Power:ClearAllPoints()
-    Power:Height(powerHeight)
-    Power:Point("BOTTOMLEFT", self, borderSize, borderSize)
-    Power:Point("BOTTOMRIGHT", self, -borderSize, borderSize)
-
-    Power.Value:Kill()
-    Power.Value = nil
-    Power.PostUpdate = nil
-
     -- Name
     Name:ClearAllPoints()
-    Name:Point("LEFT", Health, "TOPLEFT", 2, 2)
+    Name:Point("LEFT", Health, "LEFT", 2, 0)
     if (C.UnitFrames.DarkTheme) then
-        self:Tag(Name, "[Tukui:GetNameColor][Tukui:NameMedium]")
+        self:Tag(Name, "[Tukui:GetNameColor][Tukui:NameShort]")
     else
-        self:Tag(Name, "[Tukui:NameMedium]")
+        self:Tag(Name, "[Tukui:NameShort]")
     end
 end
 
@@ -88,25 +84,32 @@ end
 local function EditFocusFocusTargetCommon(self)
     EditOtherFramesCommon(self)
 
+    local Health = self.Health
+    Health:ClearAllPoints()
+    Health:SetInside(self)
+
+    self.Power:Kill()
+    self.Power = nil
+
     if (C.UnitFrames.FocusAuras) then
         local Buffs = self.Buffs
         local Debuffs = self.Debuffs
 
         Buffs:ClearAllPoints()
-        Buffs:Point("RIGHT", self, "LEFT", -ufSpacing, 0)
+        Buffs:Point("RIGHT", self, "LEFT", -FrameSpacing, 0)
         Buffs:SetFrameLevel(self:GetFrameLevel())
         Buffs:Height(ufHeight)
-        Buffs:Width(3*ufHeight + 2*ufSpacing)
+        Buffs:Width(3*ufHeight + 2*FrameSpacing)
         Buffs.size = T.Scale(ufHeight)
-        Buffs.spacing = T.Scale(ufSpacing)
+        Buffs.spacing = T.Scale(FrameSpacing)
 
         Debuffs:ClearAllPoints()
-        Debuffs:Point("LEFT", self, "RIGHT", ufSpacing, 0)
+        Debuffs:Point("LEFT", self, "RIGHT", FrameSpacing, 0)
         Debuffs:SetFrameLevel(self:GetFrameLevel())
         Debuffs:Height(ufHeight)
-        Debuffs:Width(5*ufHeight + 4*ufSpacing)
+        Debuffs:Width(5*ufHeight + 4*FrameSpacing)
         Debuffs.size = T.Scale(ufHeight)
-        Debuffs.spacing = T.Scale(ufSpacing)
+        Debuffs.spacing = T.Scale(FrameSpacing)
     end
 end
 
@@ -117,13 +120,12 @@ local function EditFocus(self)
     if (C.UnitFrames.CastBar) then
         local CastBar = self.Castbar
 
-        CastBar.Shadow:Kill()
         CastBar:SetBackdrop({})
         CastBar:CreateBackdrop()
         CastBar:ClearAllPoints()
         CastBar:Height(20)
-        CastBar:Point("TOPLEFT", self, "BOTTOMLEFT", borderSize, -3)
-        CastBar:Point("TOPRIGHT", self, "BOTTOMRIGHT", -borderSize, -3)
+        CastBar:Point("TOPLEFT", self, "BOTTOMLEFT", BorderSize, -3)
+        CastBar:Point("TOPRIGHT", self, "BOTTOMRIGHT", -BorderSize, -3)
 
         CastBar.Time:SetFontObject(smallFont)
         CastBar.Time:ClearAllPoints()
@@ -154,6 +156,22 @@ local function EditArenaBossCommon(self)
     EditOtherFramesCommon(self)
 
     local Health = self.Health
+    local Power = self.Power
+
+    Health:ClearAllPoints()
+    Health:Point("TOPLEFT", self, BorderSize, -BorderSize)
+    Health:Point("TOPRIGHT", self, -BorderSize, -BorderSize)
+    Health:Height(ufHeight - powerHeight - 3*BorderSize)
+
+    -- Power
+    Power:ClearAllPoints()
+    Power:Height(powerHeight)
+    Power:Point("BOTTOMLEFT", self, BorderSize, BorderSize)
+    Power:Point("BOTTOMRIGHT", self, -BorderSize, BorderSize)
+
+    Power.Value:Kill()
+    Power.Value = nil
+    Power.PostUpdate = nil
 
     local OverlayFrame = CreateFrame("Frame", nil, self)
     OverlayFrame:SetAllPoints()
@@ -165,23 +183,24 @@ local function EditArenaBossCommon(self)
     if (C.UnitFrames.CastBar) then
         local CastBar = self.Castbar
 
-        CastBar:SetFrameLevel(Health:GetFrameLevel() + 2)
-        CastBar:SetInside(self)
-        CastBar:SetBackdrop({ bgFile = C.Medias.Blank })
-        CastBar:SetBackdropColor(.2,.2,.2,1)
+        CastBar:ClearAllPoints()
+        CastBar:Height(20)
+        CastBar:Point("TOPLEFT", self, "BOTTOMLEFT", 0, -(FrameSpacing + BorderSize))
+        CastBar:Point("TOPRIGHT", self, "BOTTOMRIGHT", 0, -(FrameSpacing + BorderSize))
+        CastBar:SetBackdrop({})
+        CastBar:CreateBackdrop()
 
         CastBar.Time:SetFontObject(smallFont)
         CastBar.Time:ClearAllPoints()
-        CastBar.Time:Point("RIGHT", CastBar, "RIGHT", -2, -2)
+        CastBar.Time:Point("RIGHT", CastBar, "RIGHT", -2, 0)
 
         CastBar.Text:SetFontObject(smallFont)
         CastBar.Text:ClearAllPoints()
         CastBar.Text:SetWidth(UnitFrames.OtherWidth - 50)
-        CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, -2)
+        CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
 
         CastBar.Button:Kill()
         CastBar.Icon:Kill()
-        CastBar.Shadow:Kill()
     end
 end
 
@@ -196,48 +215,48 @@ local function EditArena(self)
         local Debuffs = self.Debuffs
 
         Debuffs:ClearAllPoints()
-        Debuffs:Point("LEFT", self, "RIGHT", ufSpacing, 0)
+        Debuffs:Point("LEFT", self, "RIGHT", FrameSpacing, 0)
         Debuffs:SetFrameLevel(self:GetFrameLevel())
         Debuffs:Height(ufHeight)
-        Debuffs:Width(5*ufHeight + 4*borderSize)
+        Debuffs:Width(5*ufHeight + 4*BorderSize)
         Debuffs.size = T.Scale(ufHeight)
-        Debuffs.spacing = T.Scale(ufSpacing)
+        Debuffs.spacing = T.Scale(FrameSpacing)
     end
 
     SpecIcon:ClearAllPoints()
-    SpecIcon:Size(ufHeight - 2*borderSize)
-    SpecIcon:Point("RIGHT", self, "LEFT", -(1 + borderSize), 0)
-    SpecIcon.Backdrop.Shadow:Kill()
+    SpecIcon:Size(ufHeight - 2*BorderSize)
+    SpecIcon:Point("RIGHT", self, "LEFT", -(1 + BorderSize), 0)
 
     Trinket:ClearAllPoints()
-    Trinket:Size(ufHeight - 2*borderSize)
+    Trinket:Size(ufHeight - 2*BorderSize)
     Trinket:Point("RIGHT", self, "LEFT", -(ufHeight + 1), 0)
-    Trinket.Backdrop.Shadow:Kill()
 end
 
 
 local function EditBoss(self)
     EditArenaBossCommon(self)
 
+    self.Power.PostUpdate = PostUpdatePower
+
     if (C.UnitFrames.BossAuras) then
         local Buffs = self.Buffs
         local Debuffs = self.Debuffs
 
         Buffs:ClearAllPoints()
-        Buffs:Point("RIGHT", self, "LEFT", -ufSpacing, 0)
+        Buffs:Point("RIGHT", self, "LEFT", -FrameSpacing, 0)
         Buffs:SetFrameLevel(self:GetFrameLevel())
         Buffs:Height(ufHeight)
-        Buffs:Width(3*ufHeight + 2*borderSize)
+        Buffs:Width(3*ufHeight + 2*BorderSize)
         Buffs.size = T.Scale(ufHeight)
-        Buffs.spacing = T.Scale(ufSpacing)
+        Buffs.spacing = T.Scale(FrameSpacing)
 
         Debuffs:ClearAllPoints()
-        Debuffs:Point("LEFT", self, "RIGHT", ufSpacing, 0)
+        Debuffs:Point("LEFT", self, "RIGHT", FrameSpacing, 0)
         Debuffs:SetFrameLevel(self:GetFrameLevel())
         Debuffs:Height(ufHeight)
-        Debuffs:Width(5*ufHeight + 4*borderSize)
+        Debuffs:Width(5*ufHeight + 4*BorderSize)
         Debuffs.size = T.Scale(ufHeight)
-        Debuffs.spacing = T.Scale(ufSpacing)
+        Debuffs.spacing = T.Scale(FrameSpacing)
     end
 end
 

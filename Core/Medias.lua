@@ -6,6 +6,20 @@ local TukuiMedia = T["Media"]
 TukuiMedia:RegisterTexture("CaithTex", C["Medias"]["CaithTex"])
 
 -- Fonts
+local ThinFont = CreateFont("ThinFont")
+ThinFont:SetFont(C["Medias"].ExpressRegular, 16, "OUTLINE")
+
+local NumberFont = CreateFont("NumberFont")
+NumberFont:SetFont(C["Medias"].ExpressExtraBold, 16, "OUTLINE")
+
+local BigNumberFont = CreateFont("BigNumberFont")
+BigNumberFont:SetFont(C["Medias"].ExpressExtraBold, 22, "OUTLINE")
+
+TukuiMedia:RegisterFont("Thin Font", "ThinFont")
+TukuiMedia:RegisterFont("Big Number", "BigNumberFont")
+TukuiMedia:RegisterFont("Number", "NumberFont")
+
+
 local Roboto11 = CreateFont("Roboto11")
 Roboto11:SetFont(C["Medias"].RobotoCondBold, 11, "THINOUTLINE")
 

@@ -3,6 +3,11 @@ local T, C, L = Tukui:unpack()
 local Panels = T.Panels
 local UnitFrames = T.UnitFrames
 
+local gsub = gsub
+local format = format
+
+
+
 local borderSize = C.General.BorderSize
 UnitFrames.FrameHeight = 32
 
@@ -11,6 +16,57 @@ local ufYoffset = -160
 
 -- Empty table for class specific functions
 UnitFrames.EditClassFeatures = {}
+
+
+-- Notes: 1- The Tukui version of ShortValue uses a local "Value" which seems unnecessary
+--           I left it out, maybe something weird will happen so I can learn why it was there.
+--        2- Conditionals are (hopefully) ordered from most to least likely
+function UnitFrames:ShortValue()
+    if self < 1e3 then
+        return self
+    elseif self < 2e4 then
+        return gsub(format("%.1fK", self / 1e3), "%.?0+([KMB])$", "%1")
+    elseif self < 1e6 then
+        return ("%dK"):format(self / 1e3)
+    elseif self < 2e7 then
+        return gsub(format("%.1fM", self / 1e6), "%.?0+([KMB])$", "%1")
+    elseif self < 1e9 then
+        return format("%dM", self / 1e6)
+    elseif self < 2e10 then
+        return gsub(format("%.1fB", self / 1e9), "%.?0+([KMB])$", "%1")
+    else
+        return format("%dB", self / 1e9)
+    end
+end
+
+
+-- Create a macro conditional for Healing specs (cache the string since it won't change)
+function UnitFrames:GetHealerConditional()
+    if (not self.HealerConditionalString) then
+        local NumSpecs = GetNumSpecializations()
+        local HealerSpecs = {}
+        for spec = 1, NumSpecs do
+             if (GetSpecializationRole(spec) == "HEALER") then
+                table.insert(HealerSpecs, "spec:"..spec)
+            end
+        end
+        self.HealerConditionalString = string.format("[%s]", table.concat(HealerSpecs, ","))
+    end
+    return self.HealerConditionalString
+end
+
+
+function UnitFrames:CheckInterrupt(unit)
+    if (unit == "vehicle") then
+        unit = "player"
+    end
+
+    if (self.interrupt and UnitCanAttack("player", unit)) then
+        self:SetStatusBarColor(1, 0, 0, 1)
+    else
+        self:SetStatusBarColor(0.31, 0.45, 0.63, 1)
+    end
+end
 
 
 local function CreateUnits(self)
@@ -29,7 +85,6 @@ local function CreateUnits(self)
     Target:ClearAllPoints()
     Target:Point("RIGHT", Panels.UnitFrameAnchor)
     Target:Size(self.PlayerTargetWidth, self.FrameHeight)
-    self:CreateTargetPowerToggle(Target)
 
     Pet:ClearAllPoints()
     Pet:SetParent(Panels.UnitFrameAnchor)
@@ -43,11 +98,11 @@ local function CreateUnits(self)
 
     Focus:ClearAllPoints()
     Focus:Point("TOPRIGHT", UIParent, "CENTER", -415, 300)
-    Focus:Size(self.OtherWidth, self.FrameHeight)
+    Focus:Size(self.OtherWidth, self.OtherHeight)
 
     FocusTarget:ClearAllPoints()
     FocusTarget:Point("TOP", Focus, "BOTTOM", 0, -35)
-    FocusTarget:Size(self.OtherWidth, self.FrameHeight)
+    FocusTarget:Size(self.OtherWidth, self.OtherHeight)
 
     if (C.UnitFrames.Arena) then
         local Arena = UnitFrames.Units.Arena
@@ -59,7 +114,7 @@ local function CreateUnits(self)
             else
                 Arena[i]:Point("BOTTOM", Arena[i-1], "TOP", 0, 32)
             end
-            Arena[i]:Size(self.OtherWidth, self.FrameHeight)
+            Arena[i]:Size(self.OtherWidth, self.OtherHeight)
         end
     end
 
@@ -73,7 +128,7 @@ local function CreateUnits(self)
             else
                 Boss[i]:Point("BOTTOM", Boss[i-1], "TOP", 0, 32)
             end
-            Boss[i]:Size(self.OtherWidth, self.FrameHeight)
+            Boss[i]:Size(self.OtherWidth, self.OtherHeight)
         end
     end
 
@@ -88,7 +143,6 @@ local function CreateUnits(self)
         local Raid = UnitFrames.Headers.Raid
 
         Raid:ClearAllPoints()
-        -- Raid:Point("BOTTOMRIGHT", UIParent, "CENTER", -300, -200)
         Raid:Point("TOP", Panels.UnitFrameAnchor, "BOTTOM", 0, -50)
 
         if (C.Raid.ShowPets) then
@@ -126,7 +180,7 @@ end
 
 function UnitFrames:GetRaidFramesAttributes()
     -- local Properties = C.Party.Enable and "custom [spec:3] show;hide" or "solo,party,raid"
-    local Properties = "custom [spec:3] show;hide"
+    local Properties = string.format("custom %s show;hide", self:GetHealerConditional())
 
     return
         "TukuiRaid",
@@ -185,7 +239,6 @@ end
 
 -- Skin Auras
 local function PostCreateAura(self, button)
-    button.Shadow:Kill()
     button:HideInsets()
     button.cd:SetInside()
     button.icon:SetInside()
@@ -203,7 +256,7 @@ function UnitFrames:UpdateDebuffsHeaderPosition()
     local Offset = 3
 
     if NumBuffs == 0 then
-        Offset = 6
+        Offset = 14
     end
 
     Debuffs:ClearAllPoints()
@@ -225,19 +278,35 @@ end
 
 
 -- All the stuff that needs to be changed with spec and does not need a protected environment
-local prevSpec = 0
+-- This might end up getting moved somewhere else since it's not strictly unitframe stuff
+local PrevSpec = 0
 function UnitFrames:AdjustForSpec()
-    local newSpec = GetSpecialization()
-    if (newSpec == prevSpec) then return end
+    local NewSpec = GetSpecialization()
+    if (NewSpec == PrevSpec) then return end
 
-    local castbar = UnitFrames.Units.Player.Castbar
-    castbar:ClearAllPoints()
-    if (newSpec == 3) then
-        castbar:Point("CENTER", Panels.UnitFrameAnchor, "CENTER", 0, 0)
+    local SpecName = select(2, GetSpecializationInfo(NewSpec))
+    local SpecRole = GetSpecializationRole(NewSpec)
+    local IsRanged = (SpecRole == "HEALER"  or
+                     T.MyClass == "MAGE"    or
+                     T.MyClass == "WARLOCK" or
+                     T.MyClass == "PRIEST"  or
+                    (T.MyClass == "DRUID"  and SpecName == "Balance")  or
+                    (T.MyClass == "HUNTER" and SpecName ~= "Survival") or
+                    (T.MyClass == "SHAMAN" and SpecName == "Elemental"))
+
+    self:SetPlayerProfile(SpecRole, IsRanged)
+
+    if (SpecRole == "HEALER") then
+        Panels.CenterActionBars[2]:Hide()
     else
-        castbar:Point("BOTTOM", Panels.UnitFrameAnchor, "TOP", 0, 3)
+        Panels.CenterActionBars[2]:Show()
     end
-    prevSpec = newSpec
+
+    if (self.ClassSpecChanges) then
+        self:ClassSpecChanges(NewSpec)
+    end
+
+    PrevSpec = NewSpec
 end
 
 
@@ -314,7 +383,8 @@ function UnitFrames:EnableEdits()
             ufAnchor:SetPoint("TOP", UIParent, "CENTER", 0, -(160 + ufAnchor:GetHeight()))
         end
         ]])
-    RegisterStateDriver(SecureSpecAdjuster, "role", "[spec:3] heal; dpstank")
+
+    RegisterStateDriver(SecureSpecAdjuster, "role", string.format("%s heal; dpstank", self:GetHealerConditional()))
 
     local UnitFrameAdjuster = CreateFrame("Frame", nil, UIParent)
     UnitFrameAdjuster.CurrentSpec = 0

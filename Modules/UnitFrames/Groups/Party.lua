@@ -67,7 +67,6 @@ local function EditListRaidFrame(self)
     local Name = self.Name
     local RaidIcon = self.RaidIcon
 
-    self.Shadow:Kill()
     self:SetTemplate()
     self:SetBackdropColor(0, 0, 0)
 
@@ -106,7 +105,6 @@ local function EditListRaidFrame(self)
         Portrait:SetHeight(partyHeight)
         Portrait:Point("RIGHT", self, "LEFT", -1, 0)
         Portrait.Backdrop:SetOutside(Portrait)
-        Portrait.Backdrop.Shadow:Kill()
     end
 
     self.Buffs = nil

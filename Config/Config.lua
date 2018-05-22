@@ -4,6 +4,7 @@ C["General"]["BackdropColor"] = {0.15, 0.15, 0.15}
 C["General"]["BorderColor"] = {0, 0, 0}
 C["General"]["BorderSize"] = 1                      -- Added
 C["General"]["FrameSpacing"] = 1                    -- Added
+C["General"]["HideShadows"] = true
 
 C["ActionBars"]["NormalButtonSize"] = 30
 C["ActionBars"]["PetButtonSize"] = 27
@@ -67,10 +68,11 @@ C["Tooltips"]["HealthTexture"] = "Blank"
 
 C["UnitFrames"]["DarkTheme"] = false
 C["UnitFrames"]["UnlinkCastBar"] = true
-C["UnitFrames"]["UnlinkPower"] = true           -- Added
-C["UnitFrames"]["Font"] = "Roboto 14"
+C["UnitFrames"]["BigNumberFont"] = "Big Number"
+C["UnitFrames"]["NumberFont"] = "Number"
+C["UnitFrames"]["Font"] = "Thin Font"
 C["UnitFrames"]["SmallFont"] = "Roboto 12"     -- Added
-C["UnitFrames"]["HealthTexture"] = "Blank"
-C["UnitFrames"]["PowerTexture"] = "Blank"
-C["UnitFrames"]["CastTexture"] = "Blank"
+C["UnitFrames"]["HealthTexture"] = "Tukui"
+C["UnitFrames"]["PowerTexture"] = "Tukui"
+C["UnitFrames"]["CastTexture"] = "Tukui"
 C["UnitFrames"]["WeakBar"] = false

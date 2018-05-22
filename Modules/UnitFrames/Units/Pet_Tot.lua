@@ -3,7 +3,7 @@ local T, C, L = Tukui:unpack()
 local UnitFrames = T.UnitFrames
 local DummyFcn = function() end
 
-local ufFont = T.GetFont(C["UnitFrames"].Font)
+local NameFont = T.GetFont(C["UnitFrames"].Font)
 
 UnitFrames.PetTotWidth = 90
 
@@ -12,7 +12,6 @@ local function EditPetTotCommon(self)
     local Health = self.Health
 
     self.Panel:Kill()
-    self.Shadow:Kill()
     self:SetTemplate()
     self:SetBackdropColor(0, 0, 0)
 
@@ -22,9 +21,9 @@ local function EditPetTotCommon(self)
 
     -- Create new Name since we killed the panel
     local Name = Health:CreateFontString(nil, "OVERLAY")
-    Name:Point("CENTER", Health, "TOP", 0, 2)
-    Name:SetJustifyH("LEFT")
-    Name:SetFontObject(ufFont)
+    Name:Point("CENTER", Health, "CENTER", 0, 0)
+    Name:SetJustifyH("CENTER")
+    Name:SetFontObject(NameFont)
 
     UnitFrames.UpdateNamePosition = DummyFcn
 

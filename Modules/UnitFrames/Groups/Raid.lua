@@ -26,7 +26,6 @@ local function EditGridRaidFrame(self)
     local Health = self.Health
 
     self.Panel:Kill()
-    self.Shadow:Kill()
     self:SetTemplate()
 
     -- Frame to overlay text above heal prediction
@@ -52,7 +51,6 @@ local function EditGridRaidFrame(self)
     end
 
     local RaidDebuffs = self.RaidDebuffs
-    RaidDebuffs.Shadow:Kill()
 
     local Highlight = self.Highlight
     Highlight:SetAllPoints(self)

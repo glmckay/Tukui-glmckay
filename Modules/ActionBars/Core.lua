@@ -3,87 +3,85 @@ local T, C, L = unpack(Tukui)
 local ActionBars = T["ActionBars"]
 local Panels = T["Panels"]
 
-local FrameSpacing = C.General.FrameSpacing
-local BorderSize = C.General.BorderSize
+local FrameSpacing = C["General"].FrameSpacing
+local BorderSize = C["General"].BorderSize
+local CenterButtonSize = C["ActionBars"].CenterButtonSize
 
 
 local function EnableShiftPaging()
---     local Bar1 = TukuiPanels.ActionBar1
---     local Bar1StateHandler = CreateFrame("Frame", "TukuiBarStateHandler", UIParent, "SecureHandlerStateTemplate")
-
---     Bar1StateHandler:Execute("Bar1Buttons = newtable()")
---     for i = 1,NUM_ACTIONBAR_BUTTONS do
---         local btnName = "Bar1Button"..i
---         Bar1StateHandler:SetFrameRef(btnName, Bar1["Button"..i])
---         Bar1StateHandler:Execute(string.format('Bar1Buttons[%d] = self:GetFrameRef("%s")', i, btnName))
---     end
-
---     RegisterStateDriver(Bar1StateHandler, "shift-state", "[vehicleui][petbattle][overridebar] ignore;[mod:Shift] shift; noshift")
---     Bar1StateHandler:SetAttribute("_onstate-shift-state", [[
---         -- Note: Arguments are self, stateid, newstate
---         pageNum = -1
---         if newstate == "shift" then
---             pageNum = 2
---         elseif newstate == "noshift" then
---             pageNum = 1
---         end
---         if (pageNum > 0) then
---             for _,btn in ipairs(Bar1Buttons) do
---                 btn:SetAttribute("actionpage", pageNum)
---             end
---         end
---     ]])
-    local actionBar1 = Panels.ActionBar1
-    local oldGetBar = actionBar1.GetBar
-    actionBar1.GetBar = function()
-        return string.gsub(oldGetBar(actionBar1), "bar:2", "mod:Shift][bar:2")
+    local ActionBar1 = Panels.ActionBar1
+    local OldGetBar = ActionBar1.GetBar
+    ActionBar1.GetBar = function()
+        return string.gsub(OldGetBar(ActionBar1), "bar:2", "mod:Shift][bar:2")
     end
     ActionBars:UpdateBar1()
 end
 
 
 local function MiddleBar()
-    local actionBar2 = Panels.ActionBar2
-    local actionBar4 = Panels.ActionBar4
+    local ActionBar2 = Panels.ActionBar2
 
-    local previousButton
+    -- I plan on removing this or giving it its own function in the future
     for i = 5,12 do
-        local button = actionBar2["Button"..i]
+        local Button = ActionBar2["Button"..i]
 
-        button:ClearAllPoints()
-        button:Size(29)
+        Button:ClearAllPoints()
+        Button:Size(29)
         -- button:SetAttribute("flyoutDirection", "DOWN")
 
         if (i == 5) then
-            button:Point("TOPLEFT", Panels.UnitFrameAnchor, "BOTTOMLEFT", 0, -FrameSpacing)
+            Button:Point("TOPLEFT", Panels.UnitFrameAnchor, "BOTTOMLEFT", 0, -FrameSpacing)
         else
-            button:Point("LEFT", previousButton, "RIGHT", FrameSpacing, 0)
+            Button:Point("LEFT", PreviousButton, "RIGHT", FrameSpacing, 0)
         end
-        previousButton = button
+        PreviousButton = Button
         -- For now
-        RegisterStateDriver(button, "visibility", "[vehicleui][petbattle][overridebar][nocombat,nomod:shift]hide; show")
+        RegisterStateDriver(Button, "visibility", "[vehicleui][petbattle][overridebar][nocombat,nomod:shift]hide; show")
     end
 
-    actionBar4:SetBackdrop(nil)
-    actionBar4:Show()
-    for i = 1,12 do
-        local button = actionBar4["Button"..i]
 
-        button:Size(40)
-        button:ClearAllPoints()
-        button:SetAttribute("flyoutDirection", "UP")
+    local CenterActionBar1 = Panels.ActionBar4
+    CenterActionBar1:Show()
+    CenterActionBar1:ClearAllPoints()
+    CenterActionBar1:Size(6*CenterButtonSize + 5*FrameSpacing, CenterButtonSize)
+    CenterActionBar1:Point("TOP", Panels.UnitFrameAnchor, "BOTTOM", 0, -FrameSpacing)
+
+    local CenterActionBar2 = CreateFrame("Frame", "TukuiActionBar4Row2", CenterActionBar1, "SecureHandlerStateTemplate")
+    CenterActionBar2:Size(6*CenterButtonSize + 5*FrameSpacing, CenterButtonSize)
+    CenterActionBar2:Point("TOP", CenterActionBar1, "BOTTOM", 0, -FrameSpacing)
+    CenterActionBar2:SetFrameStrata(CenterActionBar1:GetFrameStrata())
+    CenterActionBar2:SetFrameLevel(CenterActionBar1:GetFrameLevel())
+
+    -- CenterActionBar:SetBackdrop(nil)
+    for i = 1,12 do
+        local Button = CenterActionBar1["Button"..i]
+
+        if (i <= 6) then
+            Button:SetAttribute("flyoutDirection", "UP")
+        else
+            CenterActionBar1["Button"..i] = nil
+            CenterActionBar2["Button"..i-6] = Button
+            Button:SetParent(CenterActionBar2)
+            Button:SetAttribute("actionpage", 3)
+            Button:SetAttribute("flyoutDirection", "DOWN")
+        end
+
+        Button:Size(CenterButtonSize)
+        Button:ClearAllPoints()
 
         if (i == 1) then
-            button:SetPoint("TOPLEFT", Panels.UnitFrameAnchor, "BOTTOM", -3*(40 + FrameSpacing), -FrameSpacing)
+            Button:SetPoint("LEFT", CenterActionBar1)
         elseif (i == 7) then
-            button:SetPoint("TOPLEFT", actionBar4["Button"..1], "BOTTOMLEFT", 0, -FrameSpacing)
+            Button:SetPoint("LEFT", CenterActionBar2)
         else
-            button:SetPoint("LEFT", previousButton, "RIGHT", FrameSpacing, 0)
+            Button:SetPoint("LEFT", PreviousButton, "RIGHT", FrameSpacing, 0)
         end
-        previousButton = button
+        PreviousButton = Button
     end
 
-    RegisterStateDriver(actionBar4, "visibility", "[vehicleui][petbattle][overridebar][nocombat,nomod:shift]hide; show")
+    RegisterStateDriver(CenterActionBar1, "visibility", "[vehicleui][petbattle][overridebar][nocombat,nomod:shift]hide; show")
+
+    Panels.CenterActionBars = { CenterActionBar1, CenterActionBar2 }
 end
 
 

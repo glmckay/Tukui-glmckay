@@ -59,6 +59,7 @@ local function SetTemplate(f, t, tex)
     f:SetBackdropBorderColor(borderr, borderg, borderb)
 end
 
+
 local function EditAPI(object)
     local mt = getmetatable(object).__index
     if object.SetTemplate then mt.SetTemplate = SetTemplate end
