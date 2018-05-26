@@ -2,22 +2,23 @@ local T, C, L = unpack(Tukui)
 
 local Experience = T["Miscellaneous"].Experience
 local BorderSize = C["General"].BorderSize
+local FrameSpacing = C["General"].FrameSpacing
 
 local function EditBars(self)
     for i = 1, self.NumBars do
         local XPBar = self["XPBar"..i]
         local RestedBar = self["RestedBar"..i]
 
-        XPBar:SetStatusBarTexture(C["Medias"].Blank)
+        -- XPBar:SetStatusBarTexture(C["Medias"].Blank)
         XPBar:SetOrientation("Horizontal")
 
-        RestedBar:SetStatusBarTexture(C["Medias"].Blank)
+        -- RestedBar:SetStatusBarTexture(C["Medias"].Blank)
         RestedBar:SetOrientation("Horizontal")
 
         local anchorFrame = ((i == 1 and Minimap) or self["XPBar"..i-1])
         XPBar:ClearAllPoints()
-        XPBar:Point("TOPLEFT", anchorFrame, "BOTTOMLEFT", 0, -BorderSize)
-        XPBar:Point("TOPRIGHT", anchorFrame, "BOTTOMRIGHT", 0, -BorderSize)
+        XPBar:Point("TOPLEFT", anchorFrame, "BOTTOMLEFT", 0, -(BorderSize*2 + FrameSpacing))
+        XPBar:Point("TOPRIGHT", anchorFrame, "BOTTOMRIGHT", 0, -(BorderSize*2 + FrameSpacing))
         XPBar:Height(6)
     end
 end

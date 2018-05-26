@@ -1,7 +1,8 @@
 local T, C, L = Tukui:unpack()
 
-C["General"]["BackdropColor"] = {0.15, 0.15, 0.15}
+C["General"]["BackdropColor"] = {0.15, 0.15, 0.15, 0.6}
 C["General"]["BorderColor"] = {0, 0, 0}
+
 C["General"]["BorderSize"] = 1                      -- Added
 C["General"]["FrameSpacing"] = 1                    -- Added
 C["General"]["HideShadows"] = true
@@ -30,8 +31,8 @@ C["Bags"]["Spacing"] = 3
 C["Bags"]["ItemsPerRow"] = 11
 
 
-C["Chat"]["ChatFont"] = "Roboto 13"
-C["Chat"]["TabFont"] = "Roboto 12"
+C["Chat"]["ChatFont"] = "Text Font"
+C["Chat"]["TabFont"] = "Express Small"
 
 C["Cooldowns"]["Font"] = "Roboto 11"
 
@@ -68,8 +69,8 @@ C["Tooltips"]["HealthTexture"] = "Blank"
 
 C["UnitFrames"]["DarkTheme"] = false
 C["UnitFrames"]["UnlinkCastBar"] = true
-C["UnitFrames"]["BigNumberFont"] = "Big Number"
-C["UnitFrames"]["NumberFont"] = "Number"
+C["UnitFrames"]["BigNumberFont"] = "Big Number"-- Added
+C["UnitFrames"]["NumberFont"] = "Number"       -- Added
 C["UnitFrames"]["Font"] = "Thin Font"
 C["UnitFrames"]["SmallFont"] = "Roboto 12"     -- Added
 C["UnitFrames"]["HealthTexture"] = "Tukui"

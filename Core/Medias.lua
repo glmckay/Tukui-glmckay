@@ -6,6 +6,12 @@ local TukuiMedia = T["Media"]
 TukuiMedia:RegisterTexture("CaithTex", C["Medias"]["CaithTex"])
 
 -- Fonts
+local ExpressSmall = CreateFont("ExpressSmall")
+ExpressSmall:SetFont(C["Medias"].ExpressBold, 12, "OUTLINE")
+
+local TextFont = CreateFont("TextFont")
+TextFont:SetFont(C["Medias"].ExpressBold, 16, "OUTLINE")
+
 local ThinFont = CreateFont("ThinFont")
 ThinFont:SetFont(C["Medias"].ExpressRegular, 16, "OUTLINE")
 
@@ -15,6 +21,8 @@ NumberFont:SetFont(C["Medias"].ExpressExtraBold, 16, "OUTLINE")
 local BigNumberFont = CreateFont("BigNumberFont")
 BigNumberFont:SetFont(C["Medias"].ExpressExtraBold, 22, "OUTLINE")
 
+TukuiMedia:RegisterFont("Express Small", "ExpressSmall")
+TukuiMedia:RegisterFont("Text Font", "TextFont")
 TukuiMedia:RegisterFont("Thin Font", "ThinFont")
 TukuiMedia:RegisterFont("Big Number", "BigNumberFont")
 TukuiMedia:RegisterFont("Number", "NumberFont")
