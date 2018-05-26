@@ -9,10 +9,7 @@ local function EditBars(self)
         local XPBar = self["XPBar"..i]
         local RestedBar = self["RestedBar"..i]
 
-        -- XPBar:SetStatusBarTexture(C["Medias"].Blank)
         XPBar:SetOrientation("Horizontal")
-
-        -- RestedBar:SetStatusBarTexture(C["Medias"].Blank)
         RestedBar:SetOrientation("Horizontal")
 
         local anchorFrame = ((i == 1 and Minimap) or self["XPBar"..i-1])
