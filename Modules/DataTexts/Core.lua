@@ -1,42 +1,84 @@
 local T, C, L = Tukui:unpack()
 
 local TukuiDT = T["DataTexts"]
+local Panels = T["Panels"]
+
+local FadeOutAlpha = 0.4
+
+local Noop = function() end
+
+-- Remove & in between FPS and MS for FPS/MS datatext
+L.DataText.FPS = "FPS"
 
 
-local function AddMinimapAnchor(self)
-    local Anchors = self.Anchors
-    local numAnchs = self.NumAnchors + 1
-    self.NumAnchors = numAnchs
+-- Magic numbers for now until I figure out how I want to space these out nicely
+local function EditAnchors(self)
+    local DataTextCenter = Panels.DataTextCenter
+    local width = math.floor(DataTextCenter:GetWidth() / 14)
 
-    local Frame = CreateFrame("Button", nil, UIParent)
-    Frame:Size(Minimap:GetWidth() / 2, 19)
-    Frame:Point("CENTER", Minimap, "BOTTOM", 0, 1)
-    Frame:SetFrameLevel(Minimap:GetFrameLevel() + 1)
-    Frame:SetFrameStrata("HIGH")
-    Frame:EnableMouse(false)
-    Frame.SetData = Anchors[1].SetData
-    Frame.RemoveData = Anchors[1].RemoveData
-    Frame.Num = numAnchs
+    for i = 1, 6 do
+        local Frame = self.Anchors[i]
 
-    Frame.Tex = Frame:CreateTexture()
-    Frame.Tex:SetAllPoints()
-    Frame.Tex:SetColorTexture(0.2, 1, 0.2, 0)
-
-    Anchors[numAnchs] = Frame
+        Frame:ClearAllPoints()
+        if (i == 3) then
+            Frame:Width(width*2)
+            Frame:Point("CENTER", DataTextCenter)
+        else
+            Frame:Width(width*3)
+            if (i < 3) then
+                Frame:Point("CENTER", DataTextCenter, "LEFT", width*(i*3-1), 0)
+            else
+                Frame:Point("CENTER", DataTextCenter, "RIGHT", -width*((6-i)*3-1), 0)
+            end
+        end
+    end
 end
 
-hooksecurefunc(TukuiDT, "CreateAnchors", AddMinimapAnchor)
 
+-- For now just put it on the left (maybe eventually put firends/guild on left and others
+--  at usual tooltip location)
+local function GetTooltipAnchor(self)
+    return T["Panels"].DataTextLeft, "ANCHOR_TOPLEFT", 0, T.Scale(5)
+end
+
+
+local function FadeIn(self)
+    self.Text:SetAlpha(1)
+end
+
+
+local function FadeOut(self)
+    self.Text:SetAlpha(FadeOutAlpha)
+end
+
+
+local function HookMouseOver(dt)
+    dt:HookScript("OnEnter", FadeIn)
+    dt:HookScript("OnLeave", FadeOut)
+    dt.Text:SetAlpha(FadeOutAlpha)
+end
+
+
+local function EnableEdits(self)
+    for name,dt in pairs(self["Texts"]) do
+        if (dt.Text) then
+            HookMouseOver(dt)
+        end
+        dt.GetTooltipAnchor = GetTooltipAnchor
+    end
+end
 
 -- Change default datatext positions
 function TukuiDT:AddDefaults()
     TukuiData[GetRealmName()][UnitName("player")].Texts = {}
-
-    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.Guild] = {true, 1}
-    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.Friends] = {true, 2}
-    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.FPSAndMS] = {true, 3}
-    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.Memory] = {true, 4}
-    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.Durability] = {true, 5}
-    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.Gold] = {true, 6}
-    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.Time] = {true, 7}
+    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.Guild] = {true, 2}
+    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.FPSAndMS] = {true, 1}
+    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.Time] = {true, 3}
+    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.Friends] = {true, 4}
+    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.Gold] = {true, 5}
 end
+
+
+hooksecurefunc(TukuiDT, "Enable", EnableEdits)
+hooksecurefunc(TukuiDT, "CreateAnchors", EditAnchors)
+

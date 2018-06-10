@@ -1,9 +1,6 @@
 local T, C, L = Tukui:unpack()
 
-C["Medias"]["RobotoCond"] = [=[Interface\Addons\Tukui-glmckay\Medias\Fonts\RobotoCondensed-Regular.ttf]=]
-C["Medias"]["RobotoCondBold"] = [=[Interface\Addons\Tukui-glmckay\Medias\Fonts\RobotoCondensed-Bold.ttf]=]
-
-C["Medias"]["ExpressRegular"] = [=[Interface\Addons\Tukui-glmckay\Medias\Fonts\Expressway Regular.ttf]=]
-C["Medias"]["ExpressSemiBold"] = [=[Interface\Addons\Tukui-glmckay\Medias\Fonts\Expressway SemiBold.ttf]=]
-C["Medias"]["ExpressBold"] = [=[Interface\Addons\Tukui-glmckay\Medias\Fonts\Expressway Bold.ttf]=]
-C["Medias"]["ExpressExtraBold"] = [=[Interface\Addons\Tukui-glmckay\Medias\Fonts\Expressway ExtraBold.ttf]=]
+C["Medias"]["GNMedium"] = [=[Interface\Addons\Tukui-glmckay\Medias\Fonts\Gotham Narrow Medium.otf]=]
+C["Medias"]["GNBold"] = [=[Interface\Addons\Tukui-glmckay\Medias\Fonts\Gotham Narrow Bold.otf]=]
+C["Medias"]["GNBlack"] = [=[Interface\Addons\Tukui-glmckay\Medias\Fonts\Gotham Narrow Black.otf]=]
+C["Medias"]["GNUltra"] = [=[Interface\Addons\Tukui-glmckay\Medias\Fonts\Gotham Narrow Ultra.otf]=]

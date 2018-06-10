@@ -2,53 +2,36 @@ local T, C, L = Tukui:unpack()
 
 local TukuiMedia = T["Media"]
 
--- Textures
-TukuiMedia:RegisterTexture("CaithTex", C["Medias"]["CaithTex"])
+C["Medias"].BoldFont = C["Medias"].GNBlack
+C["Medias"].RegFont = C["Medias"].GNBold
+C["Medias"].ThinFont = C["Medias"].GNMedium
 
 -- Fonts
-local ExpressSmall = CreateFont("ExpressSmall")
-ExpressSmall:SetFont(C["Medias"].ExpressBold, 12, "OUTLINE")
+local SmallBoldFont = CreateFont("SmallBold")
+SmallBoldFont:SetFont(C["Medias"].BoldFont, 12, "OUTLINE")
 
-local TextFont = CreateFont("TextFont")
-TextFont:SetFont(C["Medias"].ExpressBold, 16, "OUTLINE")
+local NoOutlineRegularFont = CreateFont("NoOutlineRegular")
+NoOutlineRegularFont:SetFont(C["Medias"].RegFont, 14)
 
-local ThinFont = CreateFont("ThinFont")
-ThinFont:SetFont(C["Medias"].ExpressRegular, 16, "OUTLINE")
+local RegularFont = CreateFont("Regular")
+RegularFont:SetFont(C["Medias"].RegFont, 16, "OUTLINE")
 
-local NumberFont = CreateFont("NumberFont")
-NumberFont:SetFont(C["Medias"].ExpressExtraBold, 16, "OUTLINE")
+local ThinFont = CreateFont("Thin")
+ThinFont:SetFont(C["Medias"].ThinFont, 16, "OUTLINE")
 
-local BigNumberFont = CreateFont("BigNumberFont")
-BigNumberFont:SetFont(C["Medias"].ExpressExtraBold, 22, "OUTLINE")
+local BoldFont = CreateFont("Bold")
+BoldFont:SetFont(C["Medias"].BoldFont, 16, "OUTLINE")
 
-TukuiMedia:RegisterFont("Express Small", "ExpressSmall")
-TukuiMedia:RegisterFont("Text Font", "TextFont")
-TukuiMedia:RegisterFont("Thin Font", "ThinFont")
-TukuiMedia:RegisterFont("Big Number", "BigNumberFont")
-TukuiMedia:RegisterFont("Number", "NumberFont")
+local LargeBoldFont = CreateFont("LargeBold")
+LargeBoldFont:SetFont(C["Medias"].BoldFont, 20, "OUTLINE")
 
 
-local Roboto11 = CreateFont("Roboto11")
-Roboto11:SetFont(C["Medias"].RobotoCondBold, 11, "THINOUTLINE")
-
-local Roboto12 = CreateFont("Roboto12")
-Roboto12:SetFont(C["Medias"].RobotoCondBold, 12, "THINOUTLINE")
-
-local Roboto13 = CreateFont("Roboto13")
-Roboto13:SetFont(C["Medias"].RobotoCondBold, 13, "THINOUTLINE")
-
-local Roboto14 = CreateFont("Roboto14")
-Roboto14:SetFont(C["Medias"].RobotoCondBold, 14, "THINOUTLINE")
-
-local Roboto20 = CreateFont("Roboto20")
-Roboto20:SetFont(C["Medias"].RobotoCondBold, 20, "THINOUTLINE")
-
-
-TukuiMedia:RegisterFont("Roboto 11", "Roboto11")
-TukuiMedia:RegisterFont("Roboto 12", "Roboto12")
-TukuiMedia:RegisterFont("Roboto 13", "Roboto13")
-TukuiMedia:RegisterFont("Roboto 14", "Roboto14")
-TukuiMedia:RegisterFont("Roboto 20", "Roboto20")
+TukuiMedia:RegisterFont("Small Bold", "SmallBold")
+TukuiMedia:RegisterFont("NoOutline Regular", "NoOutlineRegular")
+TukuiMedia:RegisterFont("Regular", "Regular")
+TukuiMedia:RegisterFont("Thin", "Thin")
+TukuiMedia:RegisterFont("Large Bold", "LargeBold")
+TukuiMedia:RegisterFont("Bold", "Bold")
 
 
 -- Register some stuff with sharedmedia if it gets loaded
@@ -57,10 +40,13 @@ local function RegisterSharedMedia()
     if (not LibStub) then return end
     local media = LibStub("LibSharedMedia-3.0", "silent")
     if (media) then
-        media:Register("font", "Roboto Cond", C["Medias"]["RobotoCond"])
-        media:Register("font", "Roboto Cond Bold", C["Medias"]["RobotoCondBold"])
+        media:Register("font", "Gotham Narrow Medium", C["Medias"]["GNMedium"])
+        media:Register("font", "Gotham Narrow Bold", C["Medias"]["GNBold"])
+        media:Register("font", "Gotham Narrow Black", C["Medias"]["GNBlack"])
+        media:Register("font", "Gotham Narrow Ultra", C["Medias"]["GNUltra"])
 
         media:Register("statusbar", "Blank", C["Medias"]["Blank"])
+        media:Register("statusbar", "Tukui", C["Medias"]["Normal"])
 
         MediaLoader:UnregisterAllEvents()
     end

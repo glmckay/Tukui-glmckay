@@ -14,7 +14,7 @@ local UnitIsDead = UnitIsDead
 local UnitClass = UnitClass
 local UnitPowerType = UnitPowerType
 
-local PercentFont = T.GetFont(C["UnitFrames"].BigNumberFont)
+local BigNumberFont = T.GetFont(C["UnitFrames"].BigNumberFont)
 local NumberFont = T.GetFont(C["UnitFrames"].NumberFont)
 local NameFont = T.GetFont(C["UnitFrames"].Font)
 
@@ -124,7 +124,7 @@ local function EditPlayerTargetCommon(self)
     Health.Value:SetFontObject(NumberFont)
 
     Health.Percent = OverlayFrame:CreateFontString(nil, "OVERLAY")
-    Health.Percent:SetFontObject(PercentFont)
+    Health.Percent:SetFontObject(BigNumberFont)
 
     Health.PostUpdate = PostUpdateHealth
 
@@ -178,8 +178,6 @@ local function EditPlayer(self)
 
     Health.Value:ClearAllPoints()
     Health.Value:Point("RIGHT", Health, "RIGHT", -2, 0)
-    Health.Value:SetShadowColor(0,0,0,0.2)
-    Health.Value:SetShadowOffset(T.Scale(1), -T.Scale(1))
 
     Health.Percent:Point("LEFT", Health, "TOPLEFT", 2, 0)
 
@@ -188,7 +186,6 @@ local function EditPlayer(self)
     Power:CreateBackdrop()
 
 
-    Power.Value:SetFontObject(NumberFont)
     Power.Value:ClearAllPoints()
     Power.Value:Point("BOTTOMLEFT", self, "BOTTOMLEFT", 2, 2)
     Power.PostUpdate = PlayerPostUpdatePower
@@ -359,7 +356,7 @@ local function EditTarget(self)
         local Debuffs = self.Debuffs
         local ComboPoints = self.ComboPointsBar
 
-        Buffs:Point("BOTTOMLEFT", self, "TOPLEFT", 0, 14)
+        Buffs:Point("BOTTOMLEFT", self, "TOPLEFT", 0, 15)
         Buffs:SetFrameLevel(self:GetFrameLevel())
         Buffs:Height(auraSize)
         Buffs:Width(ufWidth)
@@ -380,10 +377,10 @@ local function EditTarget(self)
 
         -- Fix combo point scripts moving the buffs
         ComboPoints:SetScript("OnShow", function(self)
-            UnitFrames.UpdateBuffsHeaderPosition(self, 15)
+            UnitFrames.UpdateBuffsHeaderPosition(self, 25)
         end)
         ComboPoints:SetScript("OnHide", function(self)
-            UnitFrames.UpdateBuffsHeaderPosition(self, 5)
+            UnitFrames.UpdateBuffsHeaderPosition(self, 15)
         end)
     end
 end

@@ -17,7 +17,7 @@ C["ActionBars"]["HideBackdrop"] = true
 C["ActionBars"]["ButtonSpacing"] = 1
 C["ActionBars"]["HideGrid"] = true
 
-C["Auras"]["Fonts"] = "Roboto 11"
+C["Auras"]["Fonts"] = "Small Bold"
 C["Auras"]["Size"] = 34
 C["Auras"]["Spacing"] = 3
 
@@ -31,12 +31,12 @@ C["Bags"]["Spacing"] = 3
 C["Bags"]["ItemsPerRow"] = 11
 
 
-C["Chat"]["ChatFont"] = "Text Font"
-C["Chat"]["TabFont"] = "Express Small"
+C["Chat"]["ChatFont"] = "Regular"
+C["Chat"]["TabFont"] = "Small Bold"
 
-C["Cooldowns"]["Font"] = "Roboto 11"
+C["Cooldowns"]["Font"] = "Small Bold"
 
-C["DataTexts"]["Font"] = "Roboto 12"
+C["DataTexts"]["Font"] = "NoOutline Regular"
 C["DataTexts"]["Time24HrFormat"] = true
 
 C["Maps"] = {}
@@ -44,35 +44,34 @@ C["Maps"]["MinimapSize"] = 180                  -- Added (a couple things use th
 
 C["Misc"]["AutoInviteEnable"] = true
 
-C["NamePlates"]["Font"] = "Roboto 13"
-C["NamePlates"]["Texture"] = "Blank"
+C["NamePlates"]["Font"] = "Small Bold"
+C["NamePlates"]["Texture"] = "Tukui"
 
 C["Party"]["Enable"] = true
 C["Party"]["Portrait"] = false
-C["Party"]["Font"] = "Roboto 12"
-C["Party"]["HealthFont"] = "Roboto 12"
+C["Party"]["Font"] = "Small Bold"
+C["Party"]["HealthFont"] = "Small Bold"
 C["Party"]["HealthTexture"] = "Blank"
 C["Party"]["PowerTexture"] = "Blank"
 C["Party"]["ShowSolo"] = false                  -- Added (good for testing)
 
 C["Raid"]["Enable"] = true
 C["Raid"]["ShowPets"] = false
-C["Raid"]["Font"] = "Roboto 12"
-C["Raid"]["HealthFont"] = "Roboto 12"
+C["Raid"]["Font"] = "Small Bold"
+C["Raid"]["HealthFont"] = "Small Bold"
 C["Raid"]["HealthTexture"] = "Blank"
 C["Raid"]["PowerTexture"] = "Blank"
 C["Raid"]["MaxUnitPerColumn"] = 5               -- Bad things will happen if this is changed
 C["Raid"]["ShowSolo"] = false                   -- Added (good for testing)
 
-C["Tooltips"]["HealthFont"] = "Roboto 12"
+C["Tooltips"]["HealthFont"] = "Small Bold"
 C["Tooltips"]["HealthTexture"] = "Blank"
 
 C["UnitFrames"]["DarkTheme"] = false
 C["UnitFrames"]["UnlinkCastBar"] = true
-C["UnitFrames"]["BigNumberFont"] = "Big Number"-- Added
-C["UnitFrames"]["NumberFont"] = "Number"       -- Added
-C["UnitFrames"]["Font"] = "Thin Font"
-C["UnitFrames"]["SmallFont"] = "Roboto 12"     -- Added
+C["UnitFrames"]["BigNumberFont"] = "Large Bold"-- Added
+C["UnitFrames"]["NumberFont"] = "Bold"       -- Added
+C["UnitFrames"]["Font"] = "Thin"
 C["UnitFrames"]["HealthTexture"] = "Tukui"
 C["UnitFrames"]["PowerTexture"] = "Tukui"
 C["UnitFrames"]["CastTexture"] = "Tukui"

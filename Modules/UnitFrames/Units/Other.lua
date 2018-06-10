@@ -127,11 +127,9 @@ local function EditFocus(self)
         CastBar:Point("TOPLEFT", self, "BOTTOMLEFT", BorderSize, -3)
         CastBar:Point("TOPRIGHT", self, "BOTTOMRIGHT", -BorderSize, -3)
 
-        CastBar.Time:SetFontObject(smallFont)
         CastBar.Time:ClearAllPoints()
         CastBar.Time:Point("RIGHT", CastBar, "RIGHT", -2, 0)
 
-        CastBar.Text:SetFontObject(smallFont)
         CastBar.Text:ClearAllPoints()
         CastBar.Text:SetWidth(150)
         CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
@@ -190,11 +188,9 @@ local function EditArenaBossCommon(self)
         CastBar:SetBackdrop({})
         CastBar:CreateBackdrop()
 
-        CastBar.Time:SetFontObject(smallFont)
         CastBar.Time:ClearAllPoints()
         CastBar.Time:Point("RIGHT", CastBar, "RIGHT", -2, 0)
 
-        CastBar.Text:SetFontObject(smallFont)
         CastBar.Text:ClearAllPoints()
         CastBar.Text:SetWidth(UnitFrames.OtherWidth - 50)
         CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)

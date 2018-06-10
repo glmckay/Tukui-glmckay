@@ -31,7 +31,6 @@ local function EditPetTotCommon(self)
         Health:SetStatusBarColor(.25, .25, .25)
         self:Tag(Name, "[Tukui:GetNameColor][Tukui:NameShort]")
     else
-        Name:SetTextColor(.9, .9, 9)
         self:Tag(Name, "[Tukui:NameShort]")
     end
     self.Name = Name

@@ -1,14 +1,29 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 
     <Script file="ActionBars\Core.lua"/>
+
 	<Script file="AuraTimers\Core.lua"/>
+
     <Script file="Auras\Headers.lua"/>
+
     <Script file="Chat\ChatFrames.lua"/>
+
     <Script file="DataTexts\Core.lua"/>
+
     <Script file="Maps\Minimap.lua"/>
-    <Script file="Miscellaneous\Experience.lua"/>
+
+    <Script file="Miscellaneous\ExperienceBar.lua"/>
+    <Script file="Miscellaneous\ReputationBar.lua"/>
+    <Script file="Miscellaneous\ObjectiveTracker.lua"/>
+
+    <Script file="NamePlates\Core.lua"/>
+
     <Script file="Panels\Core.lua"/>
+
     <Script file="Skins\BigWigs.lua"/>
+
+    <Script file="Tooltip\Core.lua"/>
+
     <Script file="UnitFrames\Core.lua"/>
     <Script file="UnitFrames\Units\Player_Target.lua"/>
     <Script file="UnitFrames\Units\Pet_Tot.lua"/>
