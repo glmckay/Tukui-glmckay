@@ -2,11 +2,16 @@ local T, C, L = Tukui:unpack()
 
 local TukuiMedia = T["Media"]
 
+C["Medias"].Font = C["Medias"].GNBold
+
 C["Medias"].BoldFont = C["Medias"].GNBlack
 C["Medias"].RegFont = C["Medias"].GNBold
 C["Medias"].ThinFont = C["Medias"].GNMedium
 
 -- Fonts
+local SmallThinFont = CreateFont("SmallThin")
+SmallThinFont:SetFont(C["Medias"].ThinFont, 14, "OUTLINE")
+
 local SmallBoldFont = CreateFont("SmallBold")
 SmallBoldFont:SetFont(C["Medias"].BoldFont, 12, "OUTLINE")
 
@@ -25,7 +30,7 @@ BoldFont:SetFont(C["Medias"].BoldFont, 16, "OUTLINE")
 local LargeBoldFont = CreateFont("LargeBold")
 LargeBoldFont:SetFont(C["Medias"].BoldFont, 20, "OUTLINE")
 
-
+TukuiMedia:RegisterFont("Small Thin", "SmallThin")
 TukuiMedia:RegisterFont("Small Bold", "SmallBold")
 TukuiMedia:RegisterFont("NoOutline Regular", "NoOutlineRegular")
 TukuiMedia:RegisterFont("Regular", "Regular")

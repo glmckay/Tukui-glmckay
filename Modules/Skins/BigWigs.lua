@@ -2,14 +2,15 @@ local T, C, L = Tukui:unpack()
 local barPlugin = nil
 
 
-local borderSize = C.General.BorderSize
+local BorderSize = C.General.BorderSize
+local FrameSpacing = C.General.FrameSpacing
 
 local BarBackdrop = {
     bgFile = C.Medias.Blank,
-    insets = { top =    -T.Scale(borderSize),
-               left =   -T.Scale(borderSize),
-               bottom = -T.Scale(borderSize),
-               right =  -T.Scale(borderSize) },
+    insets = { top =    -T.Scale(BorderSize),
+               left =   -T.Scale(BorderSize),
+               bottom = -T.Scale(BorderSize),
+               right =  -T.Scale(BorderSize) },
 }
 
 local function RemoveStyle(bar)
@@ -75,7 +76,7 @@ local function registerMyStyle()
     barPlugin:RegisterBarStyle("identifier", {
         apiVersion = 1,
         version = 1,
-        GetSpacing = function(bar) return 5 end,
+        GetSpacing = function(bar) return FrameSpacing + 2*BorderSize end,
         ApplyStyle = StyleBar,
         BarStopped = RemoveStyle,
         GetStyleName = function() return "Tukui-glmckay" end,

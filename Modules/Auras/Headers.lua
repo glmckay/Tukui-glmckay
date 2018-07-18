@@ -31,11 +31,11 @@ local function SetInitialConfig(header)
 end
 
 -- This is only needed until EditHeaders is called
-local function CheckInitialConfig(aura)
-    local Header = aura:GetParent()
-
-    if (not Header:GetAttribute("initialConfigFunction")) then
-        SetInitialConfig(Header)
+local function CheckInitialConfig()
+    for i,Header in ipairs(TukuiAuras.Headers) do
+        if (not Header:GetAttribute("initialConfigFunction")) then
+            SetInitialConfig(Header)
+        end
     end
 end
 
@@ -56,7 +56,7 @@ local function EditHeaders(self)
 
         SetInitialConfig(Header)
     end
-    -- Get rid of this function now that we know the initial config function is set
+    -- Get rid of this function now that we know the initialConfigFunction is set
     CheckInitialConfig = function() end
 
     local Buffs = Headers[1]
@@ -82,7 +82,7 @@ end
 local function EditSkin(self)
     local Holder = self.Holder
 
-    CheckInitialConfig(self) -- In case an aura is created before EditHeaders is called
+    CheckInitialConfig() -- In case an aura is created before EditHeaders is called
 
     if (Holder) then
         Holder:Width(AuraSize)

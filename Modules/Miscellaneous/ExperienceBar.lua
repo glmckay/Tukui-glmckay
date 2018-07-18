@@ -5,7 +5,7 @@ local BorderSize = C["General"].BorderSize
 local FrameSpacing = C["General"].FrameSpacing
 
 Experience.BarHeight = 6
-Experience.NumBars = 1
+Experience.NumBars = 2
 
 local function EditBars(self)
     for i = 1, self.NumBars do

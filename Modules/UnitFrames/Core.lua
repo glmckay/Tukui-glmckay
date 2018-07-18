@@ -40,19 +40,28 @@ function UnitFrames:ShortValue()
 end
 
 
--- Create a macro conditional for Healing specs (cache the string since it won't change)
-function UnitFrames:GetHealerConditional()
-    if (not self.HealerConditionalString) then
+-- Create a macro-style conditional for the player's roles (cache the string since it won't change)
+--  Conditional returns same strings as GetSpecializationRole ("TANK", "DAMAGER", "HEALER") or "ERROR" (shouldn't happen)
+function UnitFrames:GetRoleConditional()
+    if (not self._RoleConditionalString) then
         local NumSpecs = GetNumSpecializations()
-        local HealerSpecs = {}
-        for spec = 1, NumSpecs do
-             if (GetSpecializationRole(spec) == "HEALER") then
-                table.insert(HealerSpecs, "spec:"..spec)
+        local RoleSpecs = {}
+        for spec = 1,NumSpecs do
+            local role = GetSpecializationRole(spec)
+            if (RoleSpecs[role]) then
+                table.insert(RoleSpecs[role], spec)
+            else
+                RoleSpecs[role] = { spec }
             end
         end
-        self.HealerConditionalString = string.format("[%s]", table.concat(HealerSpecs, ","))
+
+        local FullString = ""
+        for role,specs in pairs(RoleSpecs) do
+            FullString = string.format("[spec:%s]%s; ERROR", table.concat(specs, "][spec:"), role) .. FullString
+        end
+        self._RoleConditionalString = FullString
     end
-    return self.HealerConditionalString
+    return self._RoleConditionalString
 end
 
 
@@ -110,7 +119,7 @@ local function CreateUnits(self)
         for i = 1, 5 do
             Arena[i]:ClearAllPoints()
             if (i == 1) then
-                Arena[i]:Point("TOPLEFT", UIParent, "CENTER", 500, -130)
+                Arena[i]:Point("TOPLEFT", UIParent, "CENTER", 485, -30)
             else
                 Arena[i]:Point("BOTTOM", Arena[i-1], "TOP", 0, 32)
             end
@@ -124,7 +133,7 @@ local function CreateUnits(self)
         for i = 1, 5 do
             Boss[i]:ClearAllPoints()
             if (i == 1) then
-                Boss[i]:Point("TOPLEFT", UIParent, "CENTER", 500, -130)
+                Boss[i]:Point("TOPLEFT", UIParent, "CENTER", 485, -30)
             else
                 Boss[i]:Point("BOTTOM", Boss[i-1], "TOP", 0, 32)
             end
@@ -132,18 +141,8 @@ local function CreateUnits(self)
         end
     end
 
-    if (C.Party.Enable) then
-        local Party = UnitFrames.Headers.Party
-
-        Party:ClearAllPoints()
-        Party:Point("LEFT", UIParent, "LEFT", 30, 35)
-    end
-
     if (C.Raid.Enable) then
         local Raid = UnitFrames.Headers.Raid
-
-        Raid:ClearAllPoints()
-        Raid:Point("TOP", Panels.UnitFrameAnchor, "BOTTOM", 0, -50)
 
         if (C.Raid.ShowPets) then
             local Pets = UnitFrames.Headers.RaidPet
@@ -159,14 +158,14 @@ function UnitFrames:GetPartyFramesAttributes()
     return
         "TukuiParty",
         nil,
-        "custom [spec:3] hide;show",
+        "solo,party",
         "oUF-initialConfigFunction", [[
             local header = self:GetParent()
             self:SetWidth(header:GetAttribute("initial-width"))
             self:SetHeight(header:GetAttribute("initial-height"))
         ]],
-        "initial-width", self.ListMinWidth,
-        "initial-height", self.ListMinHeight,
+        "initial-width", self.PartyListWidth,
+        "initial-height", self.PartyListHeight,
         "showSolo", C["Party"].ShowSolo,
         "showParty", true,
         "showPlayer", C["Party"].ShowPlayer,
@@ -174,13 +173,15 @@ function UnitFrames:GetPartyFramesAttributes()
         "groupFilter", "1,2,3,4,5,6,7,8",
         "groupingOrder", "1,2,3,4,5,6,7,8",
         "groupBy", "GROUP",
+        "point", "LEFT",
+        "xOffset", T.Scale(ufSpacing),
         "yOffset", T.Scale(-ufSpacing)
 end
 
 
 function UnitFrames:GetRaidFramesAttributes()
-    -- local Properties = C.Party.Enable and "custom [spec:3] show;hide" or "solo,party,raid"
-    local Properties = string.format("custom %s show;hide", self:GetHealerConditional())
+    local Properties = C.Party.Enable and "raid" or "solo,party,raid"
+    -- local Properties = string.format("custom %s show;hide", self:GetHealerConditional())
 
     return
         "TukuiRaid",
@@ -203,7 +204,7 @@ function UnitFrames:GetRaidFramesAttributes()
         "groupFilter", "1,2,3,4,5,6,7,8",
         "groupingOrder", "1,2,3,4,5,6,7,8",
         "groupBy", C["Raid"].GroupBy.Value,
-        "maxColumns", math.ceil(40/C["Raid"].MaxUnitPerColumn),
+        "maxColumns", math.ceil( 40 / C["Raid"].MaxUnitPerColumn),
         "unitsPerColumn", C["Raid"].MaxUnitPerColumn,
         "columnSpacing", T.Scale(ufSpacing),
         "columnAnchorPoint", "TOP"
@@ -220,7 +221,7 @@ function UnitFrames:GetPetRaidFramesAttributes()
         "showParty", false,
         "showRaid", C["Raid"].ShowPets,
         "showSolo", false, -- testing
-        "maxColumns", math.ceil(40 / 5),
+        "maxColumns", math.ceil(40 / C["Raid"].MaxUnitPerColumn),
         "point", "TOP",
         "unitsPerColumn", C["Raid"].MaxUnitPerColumn,
         "columnSpacing", T.Scale(ufSpacing),
@@ -310,98 +311,226 @@ function UnitFrames:AdjustForSpec()
 end
 
 
--- All the raid size adjustments than don't require a protected environment
-local prevNumGroups = -1
-function UnitFrames:AdjustRaidSize()
-    local numGroups = math.max(1, math.ceil(GetNumGroupMembers() / 5))
 
-    if (numGroups == prevNumGroups) then return end
+function UnitFrames:SetupPartyRoleSwtich()
+    -- Hook OnAttributeChanged to easily do non-protected update
+    self.Headers.Party:HookScript("OnAttributeChanged", function(self, attr, value)
+        if (attr == "framestyle") then
+            local frames = { self:GetChildren() }
+            for _,frame in ipairs(frames) do
+                if (frame.UpdateStyle) then
+                    frame:UpdateStyle(value)
+                end
+            end
+        elseif (attr == "initial-width") then
+            local frames = { self:GetChildren() }
+            for _,frame in ipairs(frames) do
+                if (frame.UpdateWidth) then
+                    frame:UpdateWidth(value)
+                end
+            end
+        end -- Don't need to to bother with initial-height for now
+    end)
 
-    -- For list frames
-    local h = self.ListMinHeight + self.ListHeightIncr*(8 - numGroups)
-    local w = self.ListMinWidth + self.ListWidthIncr*(8 - numGroups)
+    local SecurePartyAdjuster = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
+    SecurePartyAdjuster:SetFrameRef("PartyHeader", self.Headers.Party)
+    SecurePartyAdjuster:SetAttribute("_onstate-role", string.format([[
+        local header = self:GetFrameRef("PartyHeader")
 
-    local frames = { self.Headers.Party:GetChildren() }
-    for _,frame in ipairs(frames) do
-        frame:UpdateForSize(w, h, numGroups == 1)
-    end
+        local framePoint, w, h, style
+        if (newstate == "HEALER") then
+            framePoint = "LEFT"
+            w = %d
+            h = %d
+            style = "GRID"
+            header:ClearAllPoints()
+            header:SetPoint("TOPLEFT", UIParent, "BOTTOM", -250, 300)
+        else
+            framePoint = "TOP"
+            w = %d
+            h = %d
+            style = "LIST"
+            header:ClearAllPoints()
+            header:SetPoint("LEFT", UIParent, "LEFT", 300, 0)
+        end
+        header:SetAttribute("framestyle", style)
+        header:ChildUpdate("framestyle", style)
 
-    -- For grid frames
-    h = math.min(self.GridMaxHeight, math.floor(self.GridTotalHeight / numGroups))
 
-    local frames = { self.Headers.Raid:GetChildren() }
-    for _,frame in ipairs(frames) do
-        frame:UpdateForSize(w, h)
-    end
-
-    prevNumGroups = numGroups
-end
-
-
-function UnitFrames:EnableEdits()
-    local SecureRaidAdjuster = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
-
-    SecureRaidAdjuster:SetFrameRef("ListHeader", self.Headers.Party)
-    SecureRaidAdjuster:SetFrameRef("GridHeader", self.Headers.Raid)
-
-    SecureRaidAdjuster:SetAttribute("_onstate-groups", string.format([[
-        -- Note: Arguments are self, stateid, newstate
-        local numGroups = newstate
-
-        local h = %d + %d*(8 - numGroups)
-        local w = %d + %d*(8 - numGroups)
-
-        local header = self:GetFrameRef("ListHeader")
-        header:SetAttribute("initial-width", w)
-        header:SetAttribute("initial-height", h)
         local frames = newtable(header:GetChildren())
+
+        -- The header will update the position of the frames, but doesn't call ClearAllPoints()...
+        for _,frame in ipairs(frames) do frame:ClearAllPoints(); end
+        header:SetAttribute("point", framePoint)
+
         for _,frame in ipairs(frames) do
             frame:SetWidth(w)
             frame:SetHeight(h)
         end
 
-        h = math.min(%d, math.floor(%d / numGroups))
-        header = self:GetFrameRef("GridHeader")
+        header:SetAttribute("initial-width", w)
         header:SetAttribute("initial-height", h)
-        frames = newtable(header:GetChildren())
+    ]], self.GridWidth, self.GridMaxHeight,
+        self.PartyListWidth, self.PartyListHeight))
+
+    RegisterStateDriver(SecurePartyAdjuster, "role", self:GetRoleConditional())
+
+end
+
+
+function UnitFrames:SetupRaidRoleSwtich()
+--shortstat-- Hook OnAttributeChanged to easily do non-protected update
+    self.Headers.Raid:HookScript("OnAttributeChanged", function(self, attr, value)
+        if (attr == "framestyle") then
+            local frames = { self:GetChildren() }
+            for _,frame in ipairs(frames) do
+                if (frame.UpdateStyle) then
+                    frame:UpdateStyle(value)
+                end
+            end
+        elseif (attr == "initial-width") then
+            local frames = { self:GetChildren() }
+            for _,frame in ipairs(frames) do
+                if (frame.UpdateWidth) then
+                    frame:UpdateWidth(value)
+                end
+            end
+        elseif (attr == "initial-height") then
+            local frames = { self:GetChildren() }
+            for _,frame in ipairs(frames) do
+                if (frame.UpdateHeight) then
+                    frame:UpdateHeight(value)
+                end
+            end
+        end
+    end)
+
+
+    local SecureRaidAdjuster = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
+
+    -- This assumes that the raid header reference is called "header"
+    --  and a table of its children called "frames"
+    local UpdateRaidFrameSizes = [[
+        local w,h
+        if (header:GetAttribute("framestyle") == "GRID") then
+            w = self:GetAttribute("GridFrameWidth")
+            h = self:GetAttribute("GridFrameHeight")
+        else
+            w = self:GetAttribute("ListFrameWidth")
+            h = self:GetAttribute("ListFrameHeight")
+        end
+
         for _,frame in ipairs(frames) do
+            frame:SetWidth(w)
             frame:SetHeight(h)
         end
-        ]], self.ListMinHeight, self.ListHeightIncr, self.ListMinWidth, self.ListWidthIncr,
-            self.GridMaxHeight, self.GridTotalHeight))
+        header:SetAttribute("initial-width", w)
+        header:SetAttribute("initial-height", h)
+    ]]
+
+    -- SecureRaidAdjuster:SetFrameRef("ListHeader", self.Headers.Party)
+    SecureRaidAdjuster:SetFrameRef("RaidHeader", self.Headers.Raid)
+
+    SecureRaidAdjuster:SetAttribute("_onstate-groups", string.format([[
+        -- Note: Arguments are self, stateid, newstate
+        local numGroups = newstate
+
+        local ListMaxHeight = %d
+        local ListTotalHeight = %d
+        local List20Width = %d
+        local List40Width = %d
+
+        local GridMaxHeight = %d
+        local GridTotalHeight = %d
+
+        if (ListMaxHeight * numGroups * 5 <= ListTotalHeight) then
+            self:SetAttribute("ListFrameWidth", List20Width)
+            self:SetAttribute("ListFrameHeight", ListMaxHeight)
+        else
+            self:SetAttribute("ListFrameWidth", List40Width)
+            self:SetAttribute("ListFrameHeight", math.min(ListMaxHeight, math.floor(ListTotalHeight / (numGroups * 5))))
+        end
+
+        self:SetAttribute("GridFrameHeight", math.min(GridMaxHeight, math.floor(GridTotalHeight / numGroups)))
+
+        local header = self:GetFrameRef("RaidHeader")
+        local frames = newtable(header:GetChildren())
+        %s
+        ]], self.ListMaxHeight, self.ListTotalHeight, self.ListLargeWidth, self.ListSmallWidth,
+            self.GridMaxHeight, self.GridTotalHeight,
+            UpdateRaidFrameSizes))
+
+    SecureRaidAdjuster:SetAttribute("GridFrameWidth", self.GridWidth)
 
     RegisterStateDriver(SecureRaidAdjuster, "groups", "[@raid36,exists] 8;[@raid31,exists] 7;[@raid26,exists] 6;[@raid21,exists] 5;[@raid16,exists] 4;[@raid11,exists] 3;[@raid6,exists] 2; 1")
 
+    SecureRaidAdjuster:SetAttribute("_onstate-role", string.format([[
+        local header = self:GetFrameRef("RaidHeader")
+
+        local unitsPerColumn, framePoint
+        if (newstate == "HEALER") then
+            unitsPerColumn = 5
+            framePoint = "LEFT"
+            header:ClearAllPoints()
+            header:SetPoint("TOPLEFT", UIParent, "BOTTOM", -250, 300)
+            header:SetAttribute("framestyle", "GRID")
+        else
+            unitsPerColumn = nil
+            framePoint = "TOP"
+            -- header:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 30, -35)
+            header:ClearAllPoints()
+            header:SetPoint("LEFT", UIParent, "LEFT", 30, 130)
+            header:SetAttribute("framestyle", "LIST")
+        end
+
+        local frames = newtable(header:GetChildren())
+
+        -- The header will update the position of the frames, but doesn't call ClearAllPoints()...
+        for _,frame in ipairs(frames) do frame:ClearAllPoints(); end
+        header:SetAttribute("unitsPerColumn", unitsPerColumn)
+        for _,frame in ipairs(frames) do frame:ClearAllPoints(); end
+        header:SetAttribute("point", framePoint)
+
+        %s
+    ]], UpdateRaidFrameSizes))
+
+    RegisterStateDriver(SecureRaidAdjuster, "role", self:GetRoleConditional())
+end
+
+
+function UnitFrames:EnableEdits()
+
+    if (C.Party.Enable) then
+        self:SetupPartyRoleSwtich()
+    end
+
+    if (C.Raid.Enable) then
+        self:SetupRaidRoleSwtich()
+    end
+
+
     local SecureSpecAdjuster = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
     SecureSpecAdjuster:SetFrameRef("ufAnchor", Panels.UnitFrameAnchor)
+
     SecureSpecAdjuster:SetAttribute("_onstate-role", [[
         -- Note: Arguments are self, stateid, newstate
         local ufAnchor = self:GetFrameRef("ufAnchor")
-        if (newstate == "heal") then
+
+        if (newstate == "HEALER") then
             ufAnchor:SetPoint("TOP", UIParent, "CENTER", 0, -160)
-        elseif (newstate == "dpstank") then
+        else
             ufAnchor:SetPoint("TOP", UIParent, "CENTER", 0, -(160 + ufAnchor:GetHeight()))
         end
         ]])
 
-    RegisterStateDriver(SecureSpecAdjuster, "role", string.format("%s heal; dpstank", self:GetHealerConditional()))
-
+    RegisterStateDriver(SecureSpecAdjuster, "role", self:GetRoleConditional())
     local UnitFrameAdjuster = CreateFrame("Frame", nil, UIParent)
-    UnitFrameAdjuster.CurrentSpec = 0
-
-
     UnitFrameAdjuster:SetScript("OnEvent", function(self, event)
-        if (event == "GROUP_ROSTER_UPDATE") then
-            UnitFrames:AdjustRaidSize()
-        else -- event == ACTIVE_TALENT_GROUP_CHANGED
-            UnitFrames:AdjustForSpec()
-        end
+        UnitFrames:AdjustForSpec()
     end)
     UnitFrameAdjuster:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
-    UnitFrameAdjuster:RegisterEvent("GROUP_ROSTER_UPDATE")
 
     self:AdjustForSpec()
-    self:AdjustRaidSize()
 
     self.SecureRaidAdjuster = SecureRaidAdjuster
     self.SecureSpecAdjuster = SecureSpecAdjuster

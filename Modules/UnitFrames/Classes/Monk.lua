@@ -12,32 +12,26 @@ local UFWidth = UnitFrames.PlayerTargetWidth
 local BarHeight = 9 -- for now
 
 
-local CenterPanelWidth = Panels.CenterPanelWidth
-
 if (T.MyClass ~= "MONK") then
     return
 end
 
--- Set Energy color
-T["Colors"]["power"]["ENERGY"] = { 1, 1, 0 }
 
 UnitFrames.EditClassFeatures["MONK"] = function(self)
+    -- Windwalker chi indicator
     local Power = self.Power
     local Harmony = self.HarmonyBar
-    local CastBar = self.Castbar
-    local TotalWidth = UFWidth
+    local TotalWidth = Panels.CenterPanelWidth - 2*BorderSize
 
     Harmony:SetBackdrop({})
 
     Harmony:SetParent(Power)
     Harmony:SetFrameLevel(0)
     Harmony:ClearAllPoints()
-    Harmony:Size(CenterPanelWidth, BarHeight)
+    Harmony:Size(TotalWidth, BarHeight)
     Harmony:Point("TOP", Panels.UnitFrameAnchor, 0, -BorderSize)
 
-    TotalWidth = CenterPanelWidth
-
-    -- The Chi colour is hardcoded, so we have to resort to the old "I changed it and lost the function"
+    -- The Chi colour is hardcoded, so we have to resort to the old "I changed it and threw away the function"
     local c = T["Colors"]["power"]["CHI"]
     for _,bar in ipairs(Harmony) do
         bar:Height(BarHeight)
@@ -69,4 +63,14 @@ UnitFrames.EditClassFeatures["MONK"] = function(self)
         end
         LastHarmony = Bar
     end
+
+    -- Add Brewmaster stagger bar
+    local Stagger = CreateFrame('StatusBar', self:GetName().."StaggerBar", Power)
+    Stagger:CreateBackdrop()
+    Stagger:SetStatusBarTexture(C["Medias"]["Blank"])
+    Stagger:Height(BarHeight)
+    Stagger:Point("BOTTOMLEFT", Power, "TOPLEFT", 0, FrameSpacing + 2*BorderSize)
+    Stagger:Point("BOTTOMRIGHT", Power, "TOPRIGHT", 0, FrameSpacing + 2*BorderSize)
+
+    self.Stagger = Stagger
 end

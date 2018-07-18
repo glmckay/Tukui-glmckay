@@ -59,12 +59,16 @@ local function PlayerPostUpdatePower(self, unit, min, max)
         self.Value:SetText()
         if (self.ExtraValue) then self.ExtraValue:SetText() end
     else
-        if (pType == 0) then
+        if (pType == 0) then -- mana
             local value = UnitFrames.ShortValue(min)
             self.Value:SetText(value)
             if (self.ExtraValue) then self.ExtraValue:SetText() end
         else
-            self.Value:SetText(min)
+            if ((pType == 3 and min == max) or (min == 0)) then -- pType 3 is energy
+                self.Value:SetText()
+            else
+                self.Value:SetText(min)
+            end
             if (self.ExtraValue) then self.ExtraValue:SetText(min) end
         end
     end
@@ -141,9 +145,6 @@ local function EditPlayerTargetCommon(self)
     CastBar.Time:Point("RIGHT", CastBar, "RIGHT", -2, 0)
 
     CastBar.Text:SetFontObject(NumberFont)
-    CastBar.Text:ClearAllPoints()
-    CastBar.Text:SetWidth(ufWidth - 50)
-    CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
 
     if C.UnitFrames.DarkTheme then
         Health:SetStatusBarColor(.25, .25, .25)
@@ -199,7 +200,7 @@ local function EditPlayer(self)
 
     Power.Value:SetParent(OverlayFrame)
 
-    RegisterStateDriver(Power, "visibility", "[nocombat,nomod:shift]hide;show")
+    RegisterStateDriver(Power, "visibility", "[combat][mod:shift]show;hide")
     Power:SetScript("OnShow", function() Power.Value:Hide() end)
     Power:SetScript("OnHide", function() Power.Value:Show() end)
 
@@ -234,9 +235,11 @@ local function EditPlayer(self)
         CastBar.Button:Kill()
     end
 
-    -- Create new combat indicator
-    self.Combat:Size(24)
-    self.Combat:SetVertexColor(1, 1, 1)
+    local Combat = self.Combat
+    Combat:ClearAllPoints()
+    Combat:Point("CENTER", Health, "CENTER")
+    Combat:Size(24)
+    Combat:SetVertexColor(1, 1, 1)
 
     self.Leader:Kill()
     self.Leader = nil
@@ -271,7 +274,10 @@ function UnitFrames:SetPlayerProfile(role, isRanged)
         CastBar:Point("TOP", Panels.UnitFrameAnchor, "TOP", 0, -BorderSize)
 
         CastBar.Text:ClearAllPoints()
+        CastBar.Text:Point("TOP", CastBar, "TOP")
+        CastBar.Text:Point("BOTTOM", CastBar, "BOTTOM")
         CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
+        CastBar.Text:SetWidth(ufWidth - 80)
         CastBar.Text:SetJustifyH("LEFT")
 
         CastBar.Time:Show()
@@ -288,7 +294,10 @@ function UnitFrames:SetPlayerProfile(role, isRanged)
         CastBar:Point("TOP", CenterActionBars[2], "BOTTOM", 0, -(FrameSpacing + BorderSize))
 
         CastBar.Text:ClearAllPoints()
-        CastBar.Text:Point("CENTER", CastBar, "BOTTOM", 0, 3)
+        CastBar.Text:Height(10)
+        CastBar.Text:Point("RIGHT", CastBar, "RIGHT", -2, 0)
+        CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
+        CastBar.Text:Point("TOP", CastBar, "CENTER")
         CastBar.Text:SetJustifyH("CENTER")
 
         CastBar.Time:Hide()
@@ -329,6 +338,13 @@ local function EditTarget(self)
     else
         CastBar:Point("TOP", self, "BOTTOM", 0, -FrameSpacing)
     end
+
+    CastBar.Text:ClearAllPoints()
+    CastBar.Text:SetWidth(ufWidth - 80)
+    CastBar.Text:Point("TOP", CastBar, "TOP")
+    CastBar.Text:Point("BOTTOM", CastBar, "BOTTOM")
+    CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
+
     if C.UnitFrames.CastBarIcon then
         CastBar.Icon:ClearAllPoints()
         CastBar.Icon:Size(36)

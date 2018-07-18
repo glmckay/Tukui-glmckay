@@ -11,17 +11,43 @@ Panels.CenterPanelWidth = (C["ActionBars"].CenterButtonSize + FrameSpacing) * 6 
 
 
 -- Give a backdrop to Details!
-local function CreateDetailsPanels()
+local function SkinDetails()
     local i = 1
     repeat
         local Frame = _G["DetailsBaseFrame"..i]
         if not Frame then break end
         Frame:CreateBackdrop()
         i = i + 1
-    until true
+    until false
+end
 
-    DetailsBaseFrame1:ClearAllPoints()
-    DetailsBaseFrame1:Point("BOTTOMRIGHT", Panels.DataTextRight, "TOPRIGHT", -BorderSize, BorderSize + FrameSpacing)
+
+local function CreateDetailsButton(self)
+    local Details = DetailsBaseFrame1
+    local ActionButtonSize = C.ActionBars.NormalButtonSize
+    local ActionButtonSpacing = C.ActionBars.ButtonSpacing
+
+    -- Details:ClearAllPoints()
+    -- Details:Point("BOTTOMRIGHT", Panels.DataTextRight, "TOPRIGHT", -BorderSize, BorderSize + FrameSpacing)
+
+    local Button = CreateFrame("Button", "TukuiDetailsToggle", UIParent)
+    Button:Width(LeftRightPanelWidth - 6*ActionButtonSize - 5 * ActionButtonSpacing - FrameSpacing)
+    Button:Point("TOPRIGHT", self.DataTextRight, "TOPRIGHT")
+    Button:Point("BOTTOM", UIParent)
+    Button:SetTemplate()
+    Button:SetAlpha(0)
+    Button:SetScript("OnEnter", function(self) self:SetAlpha(1) end)
+    Button:SetScript("OnLeave", function(self) self:SetAlpha(0) end)
+    Button:SetScript("OnClick", function(self)
+        SlashCmdList.DETAILS("toggle 1")
+        SkinDetails()
+    end)
+    SkinDetails()
+
+    Button.Text = Button:CreateFontString(nil, "BORDER")
+    Button.Text:SetFont(C["Medias"].RegFont, 14, "OUTLINE")
+    Button.Text:SetText("Toggle Details!")
+    Button.Text:Point("BOTTOM", Button, "CENTER", 0, -2)
 end
 
 
@@ -54,7 +80,7 @@ local function EditPanels(self)
     self.UnitFrameAnchor = UnitFrameAnchor
     self.DataTextCenter = DataTextCenter
 
-    CreateDetailsPanels()
+    CreateDetailsButton(self)
 end
 
 

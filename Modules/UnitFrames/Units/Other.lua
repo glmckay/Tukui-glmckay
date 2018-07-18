@@ -159,7 +159,7 @@ local function EditArenaBossCommon(self)
     Health:ClearAllPoints()
     Health:Point("TOPLEFT", self, BorderSize, -BorderSize)
     Health:Point("TOPRIGHT", self, -BorderSize, -BorderSize)
-    Health:Height(ufHeight - powerHeight - 3*BorderSize)
+    Health:Height(ufHeight - 2*BorderSize)
 
     -- Power
     Power:ClearAllPoints()

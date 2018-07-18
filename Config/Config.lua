@@ -48,19 +48,21 @@ C["NamePlates"]["Font"] = "Small Bold"
 C["NamePlates"]["Texture"] = "Tukui"
 
 C["Party"]["Enable"] = true
-C["Party"]["Portrait"] = false
-C["Party"]["Font"] = "Small Bold"
+C["Party"]["Portrait"] = false                  -- This is just disabled now
+C["Party"]["Font"] = "Small Thin"
 C["Party"]["HealthFont"] = "Small Bold"
-C["Party"]["HealthTexture"] = "Blank"
-C["Party"]["PowerTexture"] = "Blank"
+C["Party"]["HealthTexture"] = "Tukui"
+C["Party"]["PowerTexture"] = "Tukui"
+C["Party"]["ShowPlayer"] = true
 C["Party"]["ShowSolo"] = false                  -- Added (good for testing)
 
 C["Raid"]["Enable"] = true
 C["Raid"]["ShowPets"] = false
-C["Raid"]["Font"] = "Small Bold"
-C["Raid"]["HealthFont"] = "Small Bold"
-C["Raid"]["HealthTexture"] = "Blank"
-C["Raid"]["PowerTexture"] = "Blank"
+C["Raid"]["Highlight"] = false
+C["Raid"]["Font"] = "Small Thin"
+C["Raid"]["HealthFont"] = "Small Thin"
+C["Raid"]["HealthTexture"] = "Tukui"
+C["Raid"]["PowerTexture"] = "Tukui"
 C["Raid"]["MaxUnitPerColumn"] = 5               -- Bad things will happen if this is changed
 C["Raid"]["ShowSolo"] = false                   -- Added (good for testing)
 
@@ -76,3 +78,12 @@ C["UnitFrames"]["HealthTexture"] = "Tukui"
 C["UnitFrames"]["PowerTexture"] = "Tukui"
 C["UnitFrames"]["CastTexture"] = "Tukui"
 C["UnitFrames"]["WeakBar"] = false
+
+
+-- Hack to make raid rebuffs work after recent Tukui updates broke it
+--  I assume this is a bad commit from the beta version for BFA
+--  REMOVE ASAP
+if (C["Raid"]["DebuffWatch"]) then
+    C["UnitFrames"]["RaidDebuffs"] = true
+    if (not ns) then ns = {} end
+end

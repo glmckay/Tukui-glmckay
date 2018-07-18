@@ -17,29 +17,7 @@ local function EnableShiftPaging()
 end
 
 
-local function MiddleBar()
-    local ActionBar2 = Panels.ActionBar2
-
-    -- I plan on removing this or giving it its own function in the future
-    for i = 5,12 do
-        local Button = ActionBar2["Button"..i]
-
-        Button:ClearAllPoints()
-        Button:Size(29)
-        -- button:SetAttribute("flyoutDirection", "DOWN")
-
-        if (i == 5) then
-            Button:Point("TOPLEFT", Panels.UnitFrameAnchor, "BOTTOMLEFT", 0, -FrameSpacing)
-        else
-            Button:Point("LEFT", PreviousButton, "RIGHT", FrameSpacing, 0)
-        end
-        PreviousButton = Button
-        -- For now
-        RegisterStateDriver(Button, "visibility", "[vehicleui][petbattle][overridebar][nocombat,nomod:shift]hide; show")
-    end
-
-
-
+local function SetupCenterBar()
     local CenterButtonSize = C["ActionBars"].CenterButtonSize
 
     local CenterActionBar1 = Panels.ActionBar4
@@ -54,8 +32,7 @@ local function MiddleBar()
     CenterActionBar2:SetFrameStrata(CenterActionBar1:GetFrameStrata())
     CenterActionBar2:SetFrameLevel(CenterActionBar1:GetFrameLevel())
 
-    -- CenterActionBar:SetBackdrop(nil)
-    for i = 1,12 do
+    for i = 1,NUM_ACTIONBAR_BUTTONS do
         local Button = CenterActionBar1["Button"..i]
 
         if (i <= 6) then
@@ -87,11 +64,7 @@ local function MiddleBar()
 end
 
 
-if (C["ActionBars"].HideGrid == true) then
-    ActionBars.ShowGrid = function() end
-end
-
-
+-- Get rid of Tukui controls
 ActionBars.CreateToggleButtons = function() end
 ActionBars.LoadVariables = function() end
 
@@ -101,48 +74,79 @@ local function BottomRightBarStyle(Bar)
     local Spacing = C.ActionBars.ButtonSpacing
 
     Bar:Size(Size * 6 + Spacing * 5, Size * 2 + Spacing * 1)
-    Bar.Button1:ClearAllPoints()
-    Bar.Button1:Point("BOTTOMLEFT", Bar, "BOTTOMLEFT")
 
-    Bar.Button7:ClearAllPoints()
-    Bar.Button7:Point("TOPLEFT", Bar, "TOPLEFT")
+    for i = 1,NUM_ACTIONBAR_BUTTONS do
+        local Button = Bar["Button"..i]
+        local PrevButton = Bar["Button"..i-1]
+
+        Button:ClearAllPoints()
+        if (i == 1) then
+            Button:Point("BOTTOMLEFT", Bar, "BOTTOMLEFT")
+        elseif (i == 7) then
+            Button:Point("TOPLEFT", Bar, "TOPLEFT")
+        else
+            Button:Point("LEFT", PrevButton, "RIGHT", Spacing, 0)
+        end
+    end
 end
 
--- The middle bar needs to be loaded after the panels are editted, (and we don't need to make changes while
---  Tukui is loading) so we will make changes after all modules load
-local function EnableEdits(self)
-    if (C["ActionBars"].HideGrid == true) then
-        SetCVar("alwaysShowActionBars", 0)
+
+-- Always show ActionBar1 (otherwise grid doesn't show properly, maybe because of paging)
+function ActionBars:ShowGrid()
+    for i = 1, NUM_ACTIONBAR_BUTTONS do
+        local Button
+
+        Button = _G[format("ActionButton%d", i)]
+        Button:SetAttribute("showgrid", 1)
+        ActionButton_ShowGrid(Button)
     end
+end
 
-    EnableShiftPaging()
 
+local function SetExtraActionDefaultPosition()
+    local Holder = TukuiExtraActionButton
+    local Movers = T["Movers"]
+
+    Holder:ClearAllPoints()
+    Holder:Point("BOTTOM", 0, 150)
+
+    Movers:RegisterFrame(Holder)
+end
+
+
+local function EnableEdits(self)
     local Bar1 = Panels.ActionBar1
     local Bar2 = Panels.ActionBar2
     local Bar3 = Panels.ActionBar3
+    local Bar5 = Panels.ActionBar5
 
-    RegisterStateDriver(Bar1, "visibility", "[vehicleui][petbattle][overridebar][combat][mod:alt]show; hide")
-    RegisterStateDriver(Bar2, "visibility", "[vehicleui][petbattle][overridebar][nocombat,nomod:alt]hide; show")
-    RegisterStateDriver(Bar3, "visibility", "[vehicleui][petbattle][overridebar][nocombat,nomod:alt]hide; show")
+    SetCVar("alwaysShowActionBars", (C["ActionBars"].HideGrid and 0) or 1)
+
+    EnableShiftPaging()
+    SetupCenterBar()
 
     Panels.ActionBar1:HookScript("OnEvent", function(self, event)
-        if not event == "PLAYER_ENTERING_WORLD" then return end
+        if (event ~= "PLAYER_ENTERING_WORLD") then return end
         BottomRightBarStyle(self)
         self:ClearAllPoints()
         self:Point("BOTTOMLEFT", Panels.DataTextRight, "TOPLEFT", 0, FrameSpacing)
     end)
 
+    BottomRightBarStyle(Bar2)
     Bar2:ClearAllPoints()
-    Bar2:Point("BOTTOMLEFT", Bar3, "TOPLEFT", 0, FrameSpacing)
-    -- CHANGE THIS IN THE FUTURE PLEASE!!!!
-    Bar2.Button1:ClearAllPoints()
-    Bar2.Button1:Point("BOTTOMRIGHT", Bar3, "TOPRIGHT", 0, FrameSpacing)
+    Bar2:Point("BOTTOMLEFT", Bar1, "TOPLEFT", 0, FrameSpacing)
 
     BottomRightBarStyle(Bar3)
     Bar3:ClearAllPoints()
-    Bar3:Point("BOTTOMLEFT", Bar1, "TOPLEFT", 0, FrameSpacing)
+    Bar3:Point("BOTTOMLEFT", Bar2, "TOPLEFT", 0, FrameSpacing)
 
-    MiddleBar()
+    RegisterStateDriver(Bar1, "visibility", "[vehicleui][petbattle][overridebar][mod:alt]show; hide")
+    RegisterStateDriver(Bar2, "visibility", "[vehicleui][petbattle][overridebar][nomod:alt]hide; show")
+    RegisterStateDriver(Bar3, "visibility", "[vehicleui][petbattle][overridebar][nomod:alt]hide; show")
+
+    UnregisterStateDriver(Bar5, "visibility")
+    Bar5:Kill()
 end
 
 hooksecurefunc(ActionBars, "Enable", EnableEdits)
+hooksecurefunc(ActionBars, "SetUpExtraActionButton", SetExtraActionDefaultPosition)

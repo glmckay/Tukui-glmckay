@@ -5,61 +5,119 @@ local T, C, L = Tukui:unpack()
 local UnitFrames = T.UnitFrames
 
 local ufFont = T.GetFont(C["Raid"].Font)
-local borderSize = C["General"].BorderSize
-local ufSpacing = C["General"].FrameSpacing
+local BorderSize = C["General"].BorderSize
+local FrameSpacing = C["General"].FrameSpacing
 
-local powerHeight = 3
+local powerHeight = 2
+local NumDebuffs = 3
+local GridDebuffSize = 33
 
-UnitFrames.ListMinWidth = T.Scale(95)
-UnitFrames.ListMinHeight = T.Scale(17)
-UnitFrames.ListWidthIncr = T.Scale(6)
-UnitFrames.ListHeightIncr = T.Scale(3)
-
-
-local partyWidth = UnitFrames.ListMinWidth + 7*UnitFrames.ListWidthIncr
-local partyHeight = UnitFrames.ListMinHeight + 7*UnitFrames.ListHeightIncr
+-- These are coincidentally identical to the largest List-style raid frames
+UnitFrames.PartyListWidth = 160
+UnitFrames.PartyListHeight = 36
 
 
-local function RaidDebuffsShow(self)
-    local Parent = self:GetParent()
-    local Name = Parent.Name
-    Name:ClearAllPoints()
-    Name:Point("LEFT", self, "RIGHT", 5, 0)
+-- Protected stuff (basically the debuffs) needs to be handled separately.
+local function SetProtectedStyleUpdates(self)
+    self:SetFrameRef("frame", self)
+    self:SetFrameRef("debuffs", self.Debuffs)
+    self:SetAttribute("_childupdate-framestyle",  string.format([[
+        local frame = self:GetFrameRef("frame")
+        local debuffs = self:GetFrameRef("debuffs")
+        local spacing = %d
+        local numDebuffs = %d
+        local size
+
+        if (message == "GRID") then
+            size = %d
+            debuffs:ClearAllPoints()
+            debuffs:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 0, -spacing)
+        else
+            size = %d
+            debuffs:ClearAllPoints()
+            debuffs:SetPoint("TOPLEFT", frame, "TOPRIGHT", spacing, 0)
+        end
+        debuffs:SetWidth(numDebuffs * (size + spacing))
+        debuffs:SetHeight(size)
+
+        local frames = newtable(debuffs:GetChildren())
+        for _,frame in ipairs(frames) do
+            frame:SetWidth(size)
+            frame:SetHeight(size)
+        end
+    ]], T.Scale(FrameSpacing), NumDebuffs, T.Scale(GridDebuffSize), T.Scale(UnitFrames.PartyListHeight)))
 end
 
-local function RaidDebuffsHide(self)
-    local Parent = self:GetParent()
-    local Name = Parent.Name
-    Name:ClearAllPoints()
-    Name:Point("LEFT", Parent, "RIGHT", 5, 0)
-end
 
-
-local function UpdateFrameForSize(self, w, h, isParty)
-    local innerHeight = h - 2*T.Scale(borderSize)
-
-    if (isParty) then
-        self.Health:SetHeight(innerHeight - powerHeight - borderSize)
-        self.Power:Show()
-
-        if (self.Portrait) then self.Portrait:Show() end
+local function InitProtectedStyle(self, frameStyle)
+    local Debuffs = self.Debuffs
+    local Size
+    if (frameStyle == "GRID") then
+        Size = GridDebuffSize
+        Debuffs:Point("TOPLEFT", frame, "BOTTOMLEFT", 0, -FrameSpacing)
     else
-        self.Health:SetHeight(innerHeight)
-        self.Power:Hide()
-
-        if (self.Portrait) then self.Portrait:Hide() end
+        Size = UnitFrames.PartyListHeight
+        Debuffs:Point("TOPLEFT", frame, "TOPRIGHT", FrameSpacing, 0)
     end
 
-    self.RaidDebuffs:SetWidth(h)
-    self.RaidDebuffs:SetHeight(h)
+    Debuffs:Width(NumDebuffs * (Size + FrameSpacing))
+    Debuffs:Height(Size)
 
-    local HealPrediction = self.HealPrediction
-    if (HealPrediction) then
-        HealPrediction.myBar:SetWidth(w)
-        HealPrediction.otherBar:SetWidth(w)
-        HealPrediction.absorbBar:SetWidth(w)
+    local frames = {Debuffs:GetChildren()}
+    for _,frame in ipairs(frames) do
+        frame:Width(Size)
+        frame:Height(Size)
     end
 end
+
+
+local function OnRoleUpdate(self)
+    local role = UnitGroupRolesAssigned(self.unit)
+
+    if (role ~= self.CurrentRole) then
+        if (role == "HEALER" and self.FrameStyle ~= "GRID") then
+            self.Power:Show()
+        else
+            self.Power:Hide()
+        end
+        self.CurrentRole = role
+    end
+end
+
+local function UpdateFrameWidth(self, w)
+    local innerWidth = w - 2*T.Scale(BorderSize)
+    local HealPrediction = self.HealPrediction
+    HealPrediction.absorbBar:SetWidth(innerWidth)
+    HealPrediction.myBar:SetWidth(innerWidth)
+    HealPrediction.otherBar:SetWidth(innerWidth)
+end
+
+
+local function UpdateFrameStyle(self, style)
+    local Name = self.Name
+
+    if (self.FrameStyle ~= style) then
+        if (style == "GRID") then
+            self.Name:ClearAllPoints()
+            self.Name:Point("BOTTOM", self, "CENTER", 0, 2)
+
+            self.Debuffs.size = T.Scale(33)
+            self.Health.Value:Show()
+            self.Power:Hide()
+        else
+            self.Name:ClearAllPoints()
+            self.Name:Point("CENTER", self, "CENTER")
+
+            self.Debuffs.size = T.Scale(36)
+            self.Health.Value:Hide()
+            if (self.CurrentRole == "HEALER") then
+                self.Power:Show()
+            end
+        end
+        self.FrameStyle = style
+    end
+end
+
 
 local function EditListRaidFrame(self)
     local Health = self.Health
@@ -76,86 +134,47 @@ local function EditListRaidFrame(self)
     OverlayFrame:SetFrameLevel(Health:GetFrameLevel() + 3)
 
     Health:ClearAllPoints()
-    Health:Point("TOPLEFT", self, borderSize, -borderSize)
-    Health:Point("TOPRIGHT", self, -borderSize, -borderSize)
+    Health:SetInside()
     Health:SetFrameLevel(3)
 
+    Health.Value:SetParent(OverlayFrame)
+    Health.Value:ClearAllPoints()
+    Health.Value:Point("TOP", self, "CENTER", 0, -2)
+
+    Power:SetFrameLevel(5)
     Power:ClearAllPoints()
-    Power:Point("BOTTOMLEFT", self, borderSize, borderSize)
-    Power:Point("BOTTOMRIGHT", self, -borderSize, borderSize)
+    Power:Point("BOTTOMLEFT", self, BorderSize, BorderSize)
+    Power:Point("BOTTOMRIGHT", self, -BorderSize, BorderSize)
     Power:Height(powerHeight)
+    Power:CreateBackdrop()
+    Power:Hide()
 
     Name:SetParent(OverlayFrame)
-    Name:ClearAllPoints()
-    Name:Point("LEFT", self, "RIGHT", 5, 0)
-    Name:SetTextColor(.9,.9,.9)
     if (C.UnitFrames.DarkTheme) then
         Health:SetStatusBarColor(.25, .25, .25)
         self:Tag(Name, "[Tukui:GetNameColor][Tukui:NameMedium][Tukui:Role]")
     else
-        Name:SetTextColor(.9, .9, .9)
-        self:Tag(Name, "[Tukui:NameMedium][Tukui:Role]")
+        self:Tag(Name, "[Tukui:NameMedium]")
     end
 
-    -- I have no idea what it will look like with the portrait, but at least this will be half-decent
+    -- I don't care about the portrait
     if (self.Portrait) then
-        local Portrait = self.Portrait
-        Portrait:ClearAllPoints()
-        Portrait:SetWidth(partyWidth)
-        Portrait:SetHeight(partyHeight)
-        Portrait:Point("RIGHT", self, "LEFT", -1, 0)
-        Portrait.Backdrop:SetOutside(Portrait)
+        self.Portrait:Kill()
+        self.Portrait = nil
     end
 
+    self.Buffs:Kill()
     self.Buffs = nil
-    self.Debuffs = nil
-    -- No debuffs (for now)
-    -- If I revisit this in the future, I must be careful if I also want RaidDebuffs
-    -- I can't call self:DisableElement("RaidDebuffs") before the frame is completely spawned
 
-    -- local numDebuffs = 5
-    -- Debuffs:Point("LEFT", self, "RIGHT", ufSpacing, 0)
-    -- Debuffs:SetWidth(numDebuffs*(partyHeight + T.Scale(ufSpacing)))
-    -- Debuffs:SetHeight(partyHeight)
-    -- Debuffs.size = partyHeight
-    -- Debuffs.num = numDebuffs
-    -- Debuffs.spacing = ufSpacing
+    local Debuffs = self.Debuffs
+    self.Debuffs.num = numDebuffs
+    self.Debuffs.spacing = FrameSpacing
 
-
-
-    local RaidDebuffs = CreateFrame("Frame", nil, self)
-    RaidDebuffs:Point("LEFT", self, "RIGHT", ufSpacing, 0)
-    RaidDebuffs:SetTemplate()
-
-    RaidDebuffs.icon = RaidDebuffs:CreateTexture(nil, "ARTWORK")
-    RaidDebuffs.icon:SetTexCoord(.1, .9, .1, .9)
-    RaidDebuffs.icon:SetInside(RaidDebuffs)
-
-    RaidDebuffs.cd = CreateFrame("Cooldown", nil, RaidDebuffs)
-    RaidDebuffs.cd:SetAllPoints(RaidDebuffs)
-    RaidDebuffs.cd:SetHideCountdownNumbers(true)
-
-    RaidDebuffs.ShowDispelableDebuff = true
-    RaidDebuffs.FilterDispelableDebuff = true
-    RaidDebuffs.MatchBySpellName = true
-    RaidDebuffs.ShowBossDebuff = true
-    RaidDebuffs.BossDebuffPriority = 5
-
-    RaidDebuffs.count = RaidDebuffs:CreateFontString(nil, "OVERLAY")
-    RaidDebuffs.count:SetFont(C.Medias.Font, 12, "OUTLINE")
-    RaidDebuffs.count:SetPoint("BOTTOMRIGHT", RaidDebuffs, "BOTTOMRIGHT", 2, 0)
-    RaidDebuffs.count:SetTextColor(1, .9, 0)
-
-    RaidDebuffs.SetDebuffTypeColor = RaidDebuffs.SetBackdropBorderColor
-    RaidDebuffs.Debuffs = UnitFrames.RaidDebuffsTracking
-
-    RaidDebuffs:SetScript("OnShow", RaidDebuffsShow)
-    RaidDebuffs:SetScript("OnHide", RaidDebuffsHide)
-    self.RaidDebuffs = RaidDebuffs
+    UnitFrames:CreateAuraWatch(self)
 
     RaidIcon:SetParent(OverlayFrame)
     RaidIcon:ClearAllPoints()
-    RaidIcon:Point("CENTER", self, "BOTTOM", 0, 8)
+    RaidIcon:Point("TOP", self, "TOP", 0, 2)
 
     self.ReadyCheck:SetParent(OverlayFrame)
     self.ReadyCheck:ClearAllPoints()
@@ -164,13 +183,26 @@ local function EditListRaidFrame(self)
     self.Leader:Kill()
     self.Leader = nil
 
+    self.MasterLooter:Kill()
+    self.MasterLooter = nil
+
     self.OverlayFrame = OverlayFrame
     self.Name = Name
 
-    self.UpdateForSize = UpdateFrameForSize
+    self.UpdateWidth = UpdateFrameWidth
+    self.UpdateStyle = UpdateFrameStyle
+
+    SetProtectedStyleUpdates(self)
+
+    self:RegisterEvent("GROUP_ROSTER_UPDATE", OnRoleUpdate)
+    OnRoleUpdate(self)
 
     local parent = self:GetParent()
-    self:UpdateForSize(parent:GetAttribute("initial-width"), parent:GetAttribute("initial-height"), GetNumGroupMembers() <= 5)
+    local frameStyle = parent:GetAttribute("framestyle") or "LIST"
+    self:UpdateStyle(frameStyle)
+    InitProtectedStyle(self, frameStyle)
+
+    self:UpdateWidth(parent:GetAttribute("initial-width"))
 end
 
 hooksecurefunc(UnitFrames, "Party", EditListRaidFrame)

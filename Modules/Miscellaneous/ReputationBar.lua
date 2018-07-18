@@ -6,7 +6,7 @@ local BorderSize = C["General"].BorderSize
 local FrameSpacing = C["General"].FrameSpacing
 local Noop = function() end
 
-Reputation.NumBars = math.min(1, Experience.NumBars)
+Reputation.NumBars = math.min(2, Experience.NumBars)
 
 local function EditBars(self)
     for i = 1, self.NumBars do
