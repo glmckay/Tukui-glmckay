@@ -13,6 +13,7 @@ for Class,Color in pairs(TukuiColors["class"]) do
     CopyBlizzColor(Color, RAID_CLASS_COLORS[Class])
 end
 
+TukuiColors["power"]["MANA"] = {0.12, 0.45, .9}
 CopyBlizzColor(TukuiColors["power"]["ENERGY"], PowerBarColor["ENERGY"])
 
 -- Stagger

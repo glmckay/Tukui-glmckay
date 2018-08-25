@@ -1,21 +1,11 @@
 local T, C, L = Tukui:unpack()
 
--- For some reason Tukui sets UIScale to 0.71 by default and only updates it (via AutoScale)
--- to a more accurate value later during the Loading script.
--- I'm not waiting that long because the unitframe scripts that hook Tukui's functions might
--- run before my Loading script. So my I'm setting it to the proper value here.
-if (C.General.AutoScale) then
-    C.General.UIScale = min(2, max(0.32, 768 / string.match(T.Resolution, "%d+x(%d+)")))
-end
-T.Mult = 768 / string.match(T.Resolution, "%d+x(%d+)") / C.General.UIScale
-
-
-local borderSize = C.General.BorderSize
+local BorderSize = C.General.BorderSize
 
 -- Update the SetInside/SetOutsize functions to use C.General.BorderSize as its defaults
 local function SetOutside(obj, anchor, xOffset, yOffset)
-    xOffset = xOffset or borderSize
-    yOffset = yOffset or borderSize
+    xOffset = xOffset or BorderSize
+    yOffset = yOffset or BorderSize
     anchor = anchor or obj:GetParent()
 
     if obj:GetPoint() then obj:ClearAllPoints() end
@@ -25,8 +15,8 @@ local function SetOutside(obj, anchor, xOffset, yOffset)
 end
 
 local function SetInside(obj, anchor, xOffset, yOffset)
-    xOffset = xOffset or borderSize
-    yOffset = yOffset or borderSize
+    xOffset = xOffset or BorderSize
+    yOffset = yOffset or BorderSize
     anchor = anchor or obj:GetParent()
 
     if obj:GetPoint() then obj:ClearAllPoints() end
@@ -51,7 +41,7 @@ local function SetTemplate(f, t, tex)
     f:SetBackdrop({
         bgFile = texture,
         edgeFile = C.Medias.Blank,
-        edgeSize = T.Scale(borderSize)
+        edgeSize = T.Scale(BorderSize)
     })
 
     f:SetBackdropColor(backdropr, backdropg, backdropb, backdropa)

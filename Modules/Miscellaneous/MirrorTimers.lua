@@ -5,14 +5,18 @@ local MirrorTimers = T["Miscellaneous"].MirrorTimers
 local function EditTimers(self)
     for i = 1, MIRRORTIMER_NUMTIMERS, 1 do
         local Bar = _G["MirrorTimer"..i]
-        if not Bar.isTextEdited then
+        if not Bar.IsEdited then
             local Text = _G[Bar:GetName().."Text"]
+            local Status = _G[Bar:GetName().."StatusBar"]
 
-            Text:SetFont(C["Medias"].RegFont, 14, "OUTLINE")
+            Status:SetStatusBarTexture(T.GetTexture(C["Textures"].General))
 
-            Bar.isTextEdited = true
+            Text:SetFont(C["Medias"].RegFont, 16, "OUTLINE")
+            Text:SetPoint("CENTER", Bar, "CENTER", 0, C["Medias"].FontOffset + 1)
+
+            Bar.IsEdited = true
         end
     end
 end
 
-hooksecurefunc(MirrorTimer, "Update", EditTimers)
+hooksecurefunc(MirrorTimers, "Update", EditTimers)

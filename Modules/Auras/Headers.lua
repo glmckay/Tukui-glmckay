@@ -8,86 +8,83 @@ local RowSpacing = 16
 local BuffsMinHeight = 2*AuraSize + RowSpacing
 
 local MinimapSize = C.Maps.MinimapSize
-local DistanceFromMinimap = 10
+local DistanceFromMinimap = 3
 
 local BorderSize = C.General.BorderSize
 
+
 -- Long note:
 --  Auras are "secure objects" (or something like that) so their size is protected in combat.
---  I found two ways of *properly* (in my opinion) changing the size of auras:
---  1- replace the TukuiAurasTemplate with one of the desired size. This means hardcoding the
---     size, which I find a little inelegant (though it wouldn't be a big deal)
---  2- Set the "initialConfigFunction" attribute. This is acceptably elegant. However, we need
---     to set the attribute before any auras are created. This is difficult since we don't have
---     easy access to the headers until after Tukui has already made them visible (which triggers)
---     the creation of auras. Luckily, the Skin function is called immediately when an aura is
---     created (before the header can call initialConfigFunction).
+--  To change their size we need to modify the intialconfigfunction or the TukuiAurasTemplate.
+--  I used to use the fact that Skin was called before the initialconfigfunction was chcked by
+--  blizzard's header code, but now this seems to create a bug (I blame blizz). So now we wrap
+--  CreateHeaders and trick it into not showing the headers right away (luckily the headers still)
+--  get created even if the config hides them).
 
-local function SetInitialConfig(header)
-    header:SetAttribute("initialConfigFunction", string.format([[
-        self:SetWidth(%d)
-        self:SetHeight(%d)
-    ]], T.Scale(AuraSize), T.Scale(AuraSize)))
-end
-
--- This is only needed until EditHeaders is called
-local function CheckInitialConfig()
-    for i,Header in ipairs(TukuiAuras.Headers) do
-        if (not Header:GetAttribute("initialConfigFunction")) then
-            SetInitialConfig(Header)
-        end
-    end
-end
-
-local function EditHeaders(self)
+TukuiAuras.OriginalCreateHeaders = TukuiAuras.CreateHeaders
+function TukuiAuras:CreateHeaders()
+    local Movers = T["Movers"]
     local Headers = TukuiAuras.Headers
 
-    for i, Header in ipairs(Headers) do
-        if (i == 3) then
-            Header:SetAttribute("wrapYOffset", -T.Scale(AuraSize + AuraSpacing))
-        else
-            Header:SetAttribute("minHeight", T.Scale(BuffsMinHeight))
-            Header:SetAttribute("xOffset", -T.Scale(AuraSize + AuraSpacing))
-            Header:SetAttribute("wrapYOffset", -T.Scale(AuraSize + RowSpacing))
-        end
+    local InitConfigFcn = string.format([[
+        self:SetWidth(%d)
+        self:SetHeight(%d)
+    ]], T.Scale(AuraSize), T.Scale(AuraSize))
+
+    local TempHideBuffs = C.Auras.HideBuffs
+    local TempHideDebuffs = C.Auras.HideDebuffs
+    C.Auras.HideBuffs = true
+    C.Auras.HideDebuffs = true
+
+    -- Run Tukui's CreateHeaders
+    self:OriginalCreateHeaders()
+
+    for _, Header in ipairs(Headers) do
+        Header:SetAttribute("minHeight", T.Scale(BuffsMinHeight))
+        Header:SetAttribute("xOffset", -T.Scale(AuraSize + AuraSpacing))
+        Header:SetAttribute("wrapYOffset", -T.Scale(AuraSize + RowSpacing))
 
         Header:SetAttribute("minWidth", C["Auras"].BuffsPerRow * T.Scale(AuraSize + AuraSpacing))
         Header:Size(AuraSize)
 
-        SetInitialConfig(Header)
+        Header:SetAttribute("initialconfigfunction", InitConfigFcn)
     end
-    -- Get rid of this function now that we know the initialConfigFunction is set
-    CheckInitialConfig = function() end
 
     local Buffs = Headers[1]
     local Debuffs = Headers[2]
-    local Consolidate = Headers[3]
+
+    C.Auras.HideBuffs = TempHideBuffs
+    C.Auras.HideDebuffs = TempHideDebuffs
 
     if (not C.Auras.HideBuffs) then
-        Buffs:Point("TOPRIGHT", Minimap, "TOPLEFT", -DistanceFromMinimap, BorderSize)
+        Buffs:Point("TOPRIGHT", Minimap, "TOPLEFT", -(DistanceFromMinimap + BorderSize), BorderSize)
+        Buffs:SetAttribute("filter", "HELPFUL")
+        Buffs:SetAttribute("includeWeapons", 1)
+        Buffs:Show()
 
-        local Proxy = Buffs:GetAttribute("consolidateProxy")
-        Consolidate:Point("CENTER", Proxy, "CENTER", 0, -(AuraSize + AuraSpacing))
+        Movers:RegisterFrame(Buffs)
     end
 
     if (not C.Auras.HideDebuffs) then
         if (C.Auras.HideBuffs) then
-            Debuffs:Point("TOPRIGHT", Minimap, "TOPLEFT", -DistanceFromMinimap, BorderSize)
+            Debuffs:Point("TOPRIGHT", Minimap, "TOPLEFT", -(DistanceFromMinimap + BorderSize), BorderSize)
         else
             Debuffs:Point("TOP", Buffs, "BOTTOM", 0, -math.max(RowSpacing, (MinimapSize - BuffsMinHeight - AuraSize)))
         end
+
+        Debuffs:SetAttribute("filter", "HARMFUL")
+        Debuffs:Show()
+
+        Movers:RegisterFrame(Debuffs)
     end
-end
+ end
+
 
 local function EditSkin(self)
     local Holder = self.Holder
-
-    CheckInitialConfig() -- In case an aura is created before EditHeaders is called
-
     if (Holder) then
         Holder:Width(AuraSize)
     end
 end
 
-hooksecurefunc(TukuiAuras, "CreateHeaders", EditHeaders)
 hooksecurefunc(TukuiAuras, "Skin", EditSkin)

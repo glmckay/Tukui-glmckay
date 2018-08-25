@@ -86,10 +86,10 @@ end
 
 local function UpdateFrameWidth(self, w)
     local innerWidth = w - 2*T.Scale(BorderSize)
-    local HealPrediction = self.HealPrediction
-    HealPrediction.absorbBar:SetWidth(innerWidth)
-    HealPrediction.myBar:SetWidth(innerWidth)
-    HealPrediction.otherBar:SetWidth(innerWidth)
+    local HealthPrediction = self.HealthPrediction
+    HealthPrediction.absorbBar:SetWidth(innerWidth)
+    HealthPrediction.myBar:SetWidth(innerWidth)
+    HealthPrediction.otherBar:SetWidth(innerWidth)
 end
 
 
@@ -123,7 +123,8 @@ local function EditListRaidFrame(self)
     local Health = self.Health
     local Power = self.Power
     local Name = self.Name
-    local RaidIcon = self.RaidIcon
+    local RaidIcon = self.RaidTargetIndicator
+    local ReadyCheck = self.ReadyCheckIndicator
 
     self:SetTemplate()
     self:SetBackdropColor(0, 0, 0)
@@ -163,6 +164,19 @@ local function EditListRaidFrame(self)
         self.Portrait = nil
     end
 
+    local Highlight = self.Highlight
+    if (C.Party.Highlight) then
+        Highlight:SetAllPoints(self)
+        Highlight:SetBackdrop({ edgeFile = C.Medias.Blank, edgeSize = 2 })
+        Highlight:SetFrameLevel(self:GetFrameLevel() + 1)
+    else
+        self:UnregisterEvent("PLAYER_TARGET_CHANGED", UnitFrames.Highlight)
+        self:UnregisterEvent("RAID_ROSTER_UPDATE", UnitFrames.Highlight)
+        self:UnregisterEvent("PLAYER_FOCUS_CHANGED", UnitFrames.Highlight)
+        Highlight:Kill()
+        self.Highlight = nil
+    end
+
     self.Buffs:Kill()
     self.Buffs = nil
 
@@ -176,15 +190,15 @@ local function EditListRaidFrame(self)
     RaidIcon:ClearAllPoints()
     RaidIcon:Point("TOP", self, "TOP", 0, 2)
 
-    self.ReadyCheck:SetParent(OverlayFrame)
-    self.ReadyCheck:ClearAllPoints()
-    self.ReadyCheck:Point("CENTER", Health)
+    ReadyCheck:SetParent(OverlayFrame)
+    ReadyCheck:ClearAllPoints()
+    ReadyCheck:Point("CENTER", Health)
 
-    self.Leader:Kill()
-    self.Leader = nil
+    self.LeaderIndicator:Kill()
+    self.LeaderIndicator = nil
 
-    self.MasterLooter:Kill()
-    self.MasterLooter = nil
+    self.MasterLooterIndicator:Kill()
+    self.MasterLooterIndicator = nil
 
     self.OverlayFrame = OverlayFrame
     self.Name = Name

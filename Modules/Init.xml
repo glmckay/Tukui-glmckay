@@ -13,8 +13,11 @@
     <Script file="Maps\Minimap.lua"/>
 
     <Script file="Miscellaneous\ExperienceBar.lua"/>
+    <Script file="Miscellaneous\MirrorTimers.lua"/>
     <Script file="Miscellaneous\Miscellaneous.lua"/>
+    <Script file="Miscellaneous\ObjectiveTracker.lua"/>
     <Script file="Miscellaneous\ReputationBar.lua"/>
+    <Script file="Miscellaneous\VehicleIndicator.lua"/>
 
     <Script file="NamePlates\Core.lua"/>
 
@@ -25,6 +28,7 @@
     <Script file="Tooltip\Core.lua"/>
 
     <Script file="UnitFrames\Core.lua"/>
+    <Script file="UnitFrames\Units\Nameplates.lua"/>
     <Script file="UnitFrames\Units\Player_Target.lua"/>
     <Script file="UnitFrames\Units\Pet_Tot.lua"/>
     <Script file="UnitFrames\Units\Other.lua"/>

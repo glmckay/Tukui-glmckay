@@ -38,7 +38,7 @@ end
 -- For now just put it on the left (maybe eventually put firends/guild on left and others
 --  at usual tooltip location)
 local function GetTooltipAnchor(self)
-    return T["Panels"].DataTextLeft, "ANCHOR_TOPLEFT", 0, T.Scale(5)
+    return T["Panels"].DataTextLeft, "ANCHOR_CURSOR", 0, T.Scale(5)
 end
 
 

@@ -39,10 +39,10 @@ end
 
 local function UpdateFrameWidth(self, w)
     local innerWidth = w - 2*T.Scale(BorderSize)
-    local HealPrediction = self.HealPrediction
-    HealPrediction.absorbBar:SetWidth(innerWidth)
-    HealPrediction.myBar:SetWidth(innerWidth)
-    HealPrediction.otherBar:SetWidth(innerWidth)
+    local HealthPrediction = self.HealthPrediction
+    HealthPrediction.absorbBar:SetWidth(innerWidth)
+    HealthPrediction.myBar:SetWidth(innerWidth)
+    HealthPrediction.otherBar:SetWidth(innerWidth)
 end
 
 local function UpdateListNameAndDebuffs(self, h)
@@ -144,14 +144,20 @@ local function EditGridRaidFrame(self)
     end
 
     local Highlight = self.Highlight
-    if (Highlight) then
+    if (C.Raid.Highlight) then
         Highlight:SetAllPoints(self)
         Highlight:SetBackdrop({ edgeFile = C.Medias.Blank, edgeSize = 2 })
         Highlight:SetFrameLevel(self:GetFrameLevel() + 1)
+    else
+        self:UnregisterEvent("PLAYER_TARGET_CHANGED", UnitFrames.Highlight)
+        self:UnregisterEvent("RAID_ROSTER_UPDATE", UnitFrames.Highlight)
+        self:UnregisterEvent("PLAYER_FOCUS_CHANGED", UnitFrames.Highlight)
+        Highlight:Kill()
+        self.Highlight = nil
     end
 
-    local HealPrediction = self.HealPrediction
-    for name, bar in pairs(HealPrediction) do
+    local HealthPrediction = self.HealthPrediction
+    for name, bar in pairs(HealthPrediction) do
         if (name ~= "maxOverflow") then
             bar:ClearAllPoints()
             bar:SetPoint("TOP", Health)
@@ -160,15 +166,15 @@ local function EditGridRaidFrame(self)
         end
     end
 
-    local ReadyCheck = self.ReadyCheck
+    local ReadyCheck = self.ReadyCheckIndicator
     ReadyCheck:SetParent(OverlayFrame)
     ReadyCheck:ClearAllPoints()
     ReadyCheck:Point("CENTER", OverlayFrame)
 
     self.RaidDebuffs:Hide()
 
-    self.LFDRole:Kill()
-    self.LFDRole = nil
+    -- self.LFDRole:Kill()
+    -- self.LFDRole = nil
 
     self.OverlayFrame = OverlayFrame
     self.Name = Name

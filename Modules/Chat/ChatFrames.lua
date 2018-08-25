@@ -3,7 +3,7 @@ local T, C, L = Tukui:unpack()
 local TukuiChat = T["Chat"]
 
 local ChatFrameHeight = 190
-local DefaultChatFontSize = 13
+local DefaultChatFontSize = 14
 
 
 -- Blizz doesn't treat the two default tabs the same way it treats the "dynamic" tabs created
@@ -59,24 +59,44 @@ local function EditDefaultPositions()
     end
 end
 
+local function NoMouseAlphaOnTab()
+    local Frame = self:GetName()
+    local Tab = _G[Frame .. "Tab"]
+
+    if (Tab.noMouseAlpha == 0.4) or (Tab.noMouseAlpha == 0.2) then
+        Tab:SetAlpha(0)
+        Tab.noMouseAlpha = 0
+    end
+end
+
 
 local function EditInstall()
     -- I won't make font size a config option since it's only a default and
     -- it's possible to set it in-game.
     for i = 1,NUM_CHAT_WINDOWS do
-        Frame = _G["ChatFrame"..i]
+        local Frame = _G["ChatFrame"..i]
+
         FCF_SetChatWindowFontSize(Frame, Frame, DefaultChatFontSize)
     end
-
     -- Dock loot frame with the others
-    if (C.Chat.LootFrame) then
-        FCF_DockFrame(ChatFrame4)
-        FCF_SetLocked(ChatFrame4, 1)
+    FCF_DockFrame(ChatFrame4)
+    FCF_SetLocked(ChatFrame4, 1)
+end
+
+
+local function SetupEdit()
+        for i = 1,NUM_CHAT_WINDOWS do
+        local Frame = _G["ChatFrame"..i]
+        local Tab = _G["ChatFrame"..i.."Tab"]
+
+        Tab.SetAlpha = Frame.SetAlpha
+        Tab:SetAlpha(0)
     end
 end
 
 
 hooksecurefunc(TukuiChat, "StyleFrame", EditFrameStyle)
 hooksecurefunc(TukuiChat, "SetDefaultChatFramesPositions", EditDefaultPositions)
+hooksecurefunc(TukuiChat, "Setup", SetupEdit)
 hooksecurefunc(TukuiChat, "Install", EditInstall)
 

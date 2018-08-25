@@ -4,6 +4,7 @@ local UnitFrames = T.UnitFrames
 local DummyFcn = function() end
 
 local NameFont = T.GetFont(C["UnitFrames"].Font)
+local FontOffset = C["Medias"].FontOffset
 
 UnitFrames.PetTotWidth = 90
 
@@ -21,7 +22,7 @@ local function EditPetTotCommon(self)
 
     -- Create new Name since we killed the panel
     local Name = Health:CreateFontString(nil, "OVERLAY")
-    Name:Point("CENTER", Health, "CENTER", 0, 0)
+    Name:Point("CENTER", Health, "CENTER", 0, FontOffset)
     Name:SetJustifyH("CENTER")
     Name:SetFontObject(NameFont)
 
@@ -35,7 +36,7 @@ local function EditPetTotCommon(self)
     end
     self.Name = Name
 
-    local RaidIcon = self.RaidIcon
+    local RaidIcon = self.RaidTargetIndicator
     RaidIcon:ClearAllPoints()
     RaidIcon:Point("CENTER", self, "BOTTOM", 0, 12)
 

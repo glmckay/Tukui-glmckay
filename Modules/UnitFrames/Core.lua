@@ -7,7 +7,6 @@ local gsub = gsub
 local format = format
 
 
-
 local borderSize = C.General.BorderSize
 UnitFrames.FrameHeight = 32
 
@@ -70,86 +69,93 @@ function UnitFrames:CheckInterrupt(unit)
         unit = "player"
     end
 
-    if (self.interrupt and UnitCanAttack("player", unit)) then
-        self:SetStatusBarColor(1, 0, 0, 1)
+    if (self.notInterruptible and UnitCanAttack("player", unit)) then
+        self:SetStatusBarColor(0.87, 0.37, 0.37, 1)
     else
         self:SetStatusBarColor(0.31, 0.45, 0.63, 1)
+
     end
 end
 
 
 local function CreateUnits(self)
-    local Player = self.Units.Player
-    local Target = self.Units.Target
-    local ToT = self.Units.TargetOfTarget
-    local Pet = self.Units.Pet
-    local Focus = self.Units.Focus
-    local FocusTarget = self.Units.FocusTarget
+    if (C.UnitFrames.Enable) then
+        local Player = self.Units.Player
+        local Target = self.Units.Target
+        local ToT = self.Units.TargetOfTarget
+        local Pet = self.Units.Pet
+        local Focus = self.Units.Focus
+        local FocusTarget = self.Units.FocusTarget
 
-    Player:ClearAllPoints()
-    Player:SetParent(Panels.UnitFrameAnchor)
-    Player:Point("LEFT", Panels.UnitFrameAnchor)
-    Player:Size(self.PlayerTargetWidth, self.FrameHeight)
+        Player:ClearAllPoints()
+        Player:SetParent(Panels.UnitFrameAnchor)
+        Player:Point("LEFT", Panels.UnitFrameAnchor)
+        Player:Size(self.PlayerTargetWidth, self.FrameHeight)
 
-    Target:ClearAllPoints()
-    Target:Point("RIGHT", Panels.UnitFrameAnchor)
-    Target:Size(self.PlayerTargetWidth, self.FrameHeight)
+        Target:ClearAllPoints()
+        Target:Point("RIGHT", Panels.UnitFrameAnchor)
+        Target:Size(self.PlayerTargetWidth, self.FrameHeight)
 
-    Pet:ClearAllPoints()
-    Pet:SetParent(Panels.UnitFrameAnchor)
-    Pet:Point("RIGHT", Panels.UnitFrameAnchor, "LEFT", -ufSpacing, 0)
-    Pet:Size(self.PetTotWidth, self.FrameHeight)
+        Pet:ClearAllPoints()
+        Pet:SetParent(Panels.UnitFrameAnchor)
+        Pet:Point("RIGHT", Panels.UnitFrameAnchor, "LEFT", -ufSpacing, 0)
+        Pet:Size(self.PetTotWidth, self.FrameHeight)
 
-    ToT:ClearAllPoints()
-    ToT:SetParent(Panels.UnitFrameAnchor)
-    ToT:Point("LEFT", Panels.UnitFrameAnchor, "RIGHT", ufSpacing, 0)
-    ToT:Size(self.PetTotWidth, self.FrameHeight)
+        ToT:ClearAllPoints()
+        ToT:SetParent(Panels.UnitFrameAnchor)
+        ToT:Point("LEFT", Panels.UnitFrameAnchor, "RIGHT", ufSpacing, 0)
+        ToT:Size(self.PetTotWidth, self.FrameHeight)
 
-    Focus:ClearAllPoints()
-    Focus:Point("TOPRIGHT", UIParent, "CENTER", -415, 300)
-    Focus:Size(self.OtherWidth, self.OtherHeight)
+        Focus:ClearAllPoints()
+        Focus:Point("TOPRIGHT", UIParent, "CENTER", -415, 300)
+        Focus:Size(self.OtherWidth, self.OtherHeight)
 
-    FocusTarget:ClearAllPoints()
-    FocusTarget:Point("TOP", Focus, "BOTTOM", 0, -35)
-    FocusTarget:Size(self.OtherWidth, self.OtherHeight)
+        FocusTarget:ClearAllPoints()
+        FocusTarget:Point("TOP", Focus, "BOTTOM", 0, -35)
+        FocusTarget:Size(self.OtherWidth, self.OtherHeight)
 
-    if (C.UnitFrames.Arena) then
-        local Arena = UnitFrames.Units.Arena
+        if (C.UnitFrames.Arena) then
+            local Arena = UnitFrames.Units.Arena
 
-        for i = 1, 5 do
-            Arena[i]:ClearAllPoints()
-            if (i == 1) then
-                Arena[i]:Point("TOPLEFT", UIParent, "CENTER", 485, -30)
-            else
-                Arena[i]:Point("BOTTOM", Arena[i-1], "TOP", 0, 32)
+            for i = 1, 5 do
+                Arena[i]:ClearAllPoints()
+                if (i == 1) then
+                    Arena[i]:Point("TOPLEFT", UIParent, "CENTER", 485, -30)
+                else
+                    Arena[i]:Point("BOTTOM", Arena[i-1], "TOP", 0, 32)
+                end
+                Arena[i]:Size(self.OtherWidth, self.OtherHeight)
             end
-            Arena[i]:Size(self.OtherWidth, self.OtherHeight)
+        end
+
+        if (C.UnitFrames.Boss) then
+            local Boss = UnitFrames.Units.Boss
+
+            for i = 1, 5 do
+                Boss[i]:ClearAllPoints()
+                if (i == 1) then
+                    Boss[i]:Point("TOPLEFT", UIParent, "CENTER", 485, -30)
+                else
+                    Boss[i]:Point("BOTTOM", Boss[i-1], "TOP", 0, 32)
+                end
+                Boss[i]:Size(self.OtherWidth, self.OtherHeight)
+            end
+        end
+
+        if (C.Raid.Enable) then
+            local Raid = UnitFrames.Headers.Raid
+
+            if (C.Raid.ShowPets) then
+                local Pets = UnitFrames.Headers.RaidPet
+
+                Pets:ClearAllPoints()
+                Pets:Point("TOPRIGHT", Raid, "TOPLEFT", -ufSpacing, 0)
+            end
         end
     end
 
-    if (C.UnitFrames.Boss) then
-        local Boss = UnitFrames.Units.Boss
-
-        for i = 1, 5 do
-            Boss[i]:ClearAllPoints()
-            if (i == 1) then
-                Boss[i]:Point("TOPLEFT", UIParent, "CENTER", 485, -30)
-            else
-                Boss[i]:Point("BOTTOM", Boss[i-1], "TOP", 0, 32)
-            end
-            Boss[i]:Size(self.OtherWidth, self.OtherHeight)
-        end
-    end
-
-    if (C.Raid.Enable) then
-        local Raid = UnitFrames.Headers.Raid
-
-        if (C.Raid.ShowPets) then
-            local Pets = UnitFrames.Headers.RaidPet
-
-            Pets:ClearAllPoints()
-            Pets:Point("TOPRIGHT", Raid, "TOPLEFT", -ufSpacing, 0)
-        end
+    if (C.NamePlates.Enable) then
+        -- Nameplate stuff
     end
 end
 
@@ -240,7 +246,7 @@ end
 
 -- Skin Auras
 local function PostCreateAura(self, button)
-    button:HideInsets()
+    -- button:HideInsets()
     button.cd:SetInside()
     button.icon:SetInside()
 end
@@ -499,6 +505,12 @@ end
 
 
 function UnitFrames:EnableEdits()
+    if (not C.UnitFrames.Enable) then
+        return
+    end
+
+    -- For namplates
+    -- self:CreateTankListFrame()
 
     if (C.Party.Enable) then
         self:SetupPartyRoleSwtich()

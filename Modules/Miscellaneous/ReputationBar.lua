@@ -12,6 +12,7 @@ local function EditBars(self)
     for i = 1, self.NumBars do
         local RepBar = self["RepBar"..i]
 
+        RepBar:SetStatusBarTexture(T.GetTexture(C["Textures"].General))
         RepBar:SetOrientation("Horizontal")
 
         local anchorFrame = ((i == 1 and Minimap) or self["RepBar"..i-1])

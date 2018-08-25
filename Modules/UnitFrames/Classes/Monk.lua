@@ -66,6 +66,7 @@ UnitFrames.EditClassFeatures["MONK"] = function(self)
 
     -- Add Brewmaster stagger bar
     local Stagger = CreateFrame('StatusBar', self:GetName().."StaggerBar", Power)
+    Stagger:SetFrameLevel(0)
     Stagger:CreateBackdrop()
     Stagger:SetStatusBarTexture(C["Medias"]["Blank"])
     Stagger:Height(BarHeight)

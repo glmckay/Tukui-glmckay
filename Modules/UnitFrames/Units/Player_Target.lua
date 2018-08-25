@@ -17,6 +17,7 @@ local UnitPowerType = UnitPowerType
 local BigNumberFont = T.GetFont(C["UnitFrames"].BigNumberFont)
 local NumberFont = T.GetFont(C["UnitFrames"].NumberFont)
 local NameFont = T.GetFont(C["UnitFrames"].Font)
+local FontOffset = C["Medias"].FontOffset
 
 local BorderSize = C.General.BorderSize
 local FrameSpacing = C.General.FrameSpacing
@@ -112,7 +113,8 @@ local function EditPlayerTargetCommon(self)
 
     self.Panel:Kill()
     self:SetTemplate()
-    self:SetBackdropColor(0, 0, 0) -- so the space between health and power is black
+    local r,g,b = unpack(C["General"]["BackdropColor"])
+    self:SetBackdropColor(r, g, b) -- so the space between health and power is black
 
     -- Frame to overlay text above heal prediction
     local OverlayFrame = CreateFrame("Frame", nil, self)
@@ -123,6 +125,8 @@ local function EditPlayerTargetCommon(self)
     Health:ClearAllPoints()
     Health:Point("TOPLEFT", self, BorderSize, -BorderSize)
     Health:Point("TOPRIGHT", self, -BorderSize, -BorderSize)
+
+    Health.Background:Kill()
 
     Health.Value:SetParent(OverlayFrame)
     Health.Value:SetFontObject(NumberFont)
@@ -142,7 +146,7 @@ local function EditPlayerTargetCommon(self)
 
     CastBar.Time:SetFontObject(NumberFont)
     CastBar.Time:ClearAllPoints()
-    CastBar.Time:Point("RIGHT", CastBar, "RIGHT", -2, 0)
+    CastBar.Time:Point("RIGHT", CastBar, "RIGHT", -2, FontOffset)
 
     CastBar.Text:SetFontObject(NumberFont)
 
@@ -151,9 +155,9 @@ local function EditPlayerTargetCommon(self)
     end
 
     if (C.UnitFrames.HealBar) then
-        local HealPrediction = self.HealPrediction
+        local HealthPrediction = self.HealthPrediction
 
-        for name,bar in pairs(HealPrediction) do
+        for name,bar in pairs(HealthPrediction) do
             if (name ~= 'maxOverflow') then
                 bar:Width(ufWidth - 2*BorderSize)
             end
@@ -178,9 +182,9 @@ local function EditPlayer(self)
     Health:Height(healthHeight - powerHeight - BorderSize)
 
     Health.Value:ClearAllPoints()
-    Health.Value:Point("RIGHT", Health, "RIGHT", -2, 0)
+    Health.Value:Point("RIGHT", Health, "RIGHT", -2, FontOffset)
 
-    Health.Percent:Point("LEFT", Health, "TOPLEFT", 2, 0)
+    Health.Percent:Point("LEFT", Health, "TOPLEFT", 2, FontOffset)
 
     -- Power
     Power:Width(CenterBarWidth)
@@ -188,7 +192,7 @@ local function EditPlayer(self)
 
 
     Power.Value:ClearAllPoints()
-    Power.Value:Point("BOTTOMLEFT", self, "BOTTOMLEFT", 2, 2)
+    Power.Value:Point("BOTTOMLEFT", self, "BOTTOMLEFT", 2, FontOffset)
     Power.PostUpdate = PlayerPostUpdatePower
 
     Power.Prediction:Width(ufWidth - 2*BorderSize)
@@ -196,7 +200,7 @@ local function EditPlayer(self)
     -- Create a new string for the detached power bar (the usual string will stay on the frame when out of combat)
     Power.ExtraValue = Power:CreateFontString(nil, "OVERLAY")
     Power.ExtraValue:SetFontObject(BigNumberFont)
-    Power.ExtraValue:Point("CENTER", Power, "TOP", 0, 0)
+    Power.ExtraValue:Point("CENTER", Power, "TOP", 0, FontOffset)
 
     Power.Value:SetParent(OverlayFrame)
 
@@ -235,17 +239,17 @@ local function EditPlayer(self)
         CastBar.Button:Kill()
     end
 
-    local Combat = self.Combat
+    local Combat = self.CombatIndicator
     Combat:ClearAllPoints()
     Combat:Point("CENTER", Health, "CENTER")
     Combat:Size(24)
     Combat:SetVertexColor(1, 1, 1)
 
-    self.Leader:Kill()
-    self.Leader = nil
+    self.LeaderIndicator:Kill()
+    self.LeaderIndicator = nil
 
-    self.MasterLooter:Kill()
-    self.MasterLooter = nil
+    self.MasterLooterIndicator:Kill()
+    self.MasterLooterIndicator = nil
 
     if (UnitFrames.EditClassFeatures[T.MyClass]) then
         UnitFrames.EditClassFeatures[T.MyClass](self)
@@ -274,9 +278,8 @@ function UnitFrames:SetPlayerProfile(role, isRanged)
         CastBar:Point("TOP", Panels.UnitFrameAnchor, "TOP", 0, -BorderSize)
 
         CastBar.Text:ClearAllPoints()
-        CastBar.Text:Point("TOP", CastBar, "TOP")
-        CastBar.Text:Point("BOTTOM", CastBar, "BOTTOM")
-        CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
+        CastBar.Text:SetHeight(CastBar:GetHeight())
+        CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, FontOffset)
         CastBar.Text:SetWidth(ufWidth - 80)
         CastBar.Text:SetJustifyH("LEFT")
 
@@ -295,9 +298,9 @@ function UnitFrames:SetPlayerProfile(role, isRanged)
 
         CastBar.Text:ClearAllPoints()
         CastBar.Text:Height(10)
-        CastBar.Text:Point("RIGHT", CastBar, "RIGHT", -2, 0)
-        CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
-        CastBar.Text:Point("TOP", CastBar, "CENTER")
+        CastBar.Text:Point("RIGHT", CastBar, "RIGHT", -2, FontOffset)
+        CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, FontOffset)
+        CastBar.Text:Point("TOP", CastBar, "CENTER", 0, FontOffset)
         CastBar.Text:SetJustifyH("CENTER")
 
         CastBar.Time:Hide()
@@ -316,9 +319,9 @@ local function EditTarget(self)
     Health:Height(healthHeight)
 
     Health.Value:ClearAllPoints()
-    Health.Value:Point("LEFT", Health, "LEFT", 2, 0)
+    Health.Value:Point("LEFT", Health, "LEFT", 2, FontOffset)
 
-    Health.Percent:Point("RIGHT", Health, "TOPRIGHT", -2, 0)
+    Health.Percent:Point("RIGHT", Health, "TOPRIGHT", -2, FontOffset)
 
     -- Power
     Power:ClearAllPoints()
@@ -327,11 +330,11 @@ local function EditTarget(self)
     Power:Point("BOTTOMRIGHT", self, -BorderSize, BorderSize)
 
     Power.Value:ClearAllPoints()
-    Power.Value:Point("BOTTOMRIGHT", self, "BOTTOMRIGHT", -2, 2)
+    Power.Value:Point("BOTTOMRIGHT", self, "BOTTOMRIGHT", -2, FontOffset)
     Power.PostUpdate = TargetPostUpdatePower
 
     -- Castbar
-    CastBar:Height(healthHeight)
+    CastBar:Height(RangedCastBarHeight + 5)
     CastBar:ClearAllPoints()
     if (C.UnitFrames.UnlinkCastBar) then
         CastBar:Point("BOTTOM", UIParent, "CENTER", 0, 340)
@@ -341,9 +344,8 @@ local function EditTarget(self)
 
     CastBar.Text:ClearAllPoints()
     CastBar.Text:SetWidth(ufWidth - 80)
-    CastBar.Text:Point("TOP", CastBar, "TOP")
-    CastBar.Text:Point("BOTTOM", CastBar, "BOTTOM")
-    CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
+    CastBar.Text:SetHeight(CastBar:GetHeight())
+    CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, FontOffset)
 
     if C.UnitFrames.CastBarIcon then
         CastBar.Icon:ClearAllPoints()
@@ -353,7 +355,7 @@ local function EditTarget(self)
 
     -- Create new Name since we killed the panel
     local Name = OverlayFrame:CreateFontString(nil, "OVERLAY")
-    Name:Point("BOTTOMLEFT", Health, "TOPLEFT", 0, -1)
+    Name:Point("BOTTOMLEFT", Health, "TOPLEFT", -2, FontOffset - 1)
     Name:SetJustifyH("LEFT")
     Name:SetFontObject(NameFont)
 
@@ -370,7 +372,7 @@ local function EditTarget(self)
     if (C.UnitFrames.TargetAuras) then
         local Buffs = self.Buffs
         local Debuffs = self.Debuffs
-        local ComboPoints = self.ComboPointsBar
+        -- local ComboPoints = self.ComboPointsBar
 
         Buffs:Point("BOTTOMLEFT", self, "TOPLEFT", 0, 15)
         Buffs:SetFrameLevel(self:GetFrameLevel())
@@ -391,13 +393,14 @@ local function EditTarget(self)
         Debuffs.numRow = aurasPerRow
         Debuffs.Spacing = T.Scale(FrameSpacing)
 
-        -- Fix combo point scripts moving the buffs
-        ComboPoints:SetScript("OnShow", function(self)
-            UnitFrames.UpdateBuffsHeaderPosition(self, 25)
-        end)
-        ComboPoints:SetScript("OnHide", function(self)
-            UnitFrames.UpdateBuffsHeaderPosition(self, 15)
-        end)
+        -- Combo points are now on Player frame
+        -- -- Fix combo point scripts moving the buffs
+        -- ComboPoints:SetScript("OnShow", function(self)
+        --     UnitFrames.UpdateBuffsHeaderPosition(self, 25)
+        -- end)
+        -- ComboPoints:SetScript("OnHide", function(self)
+        --     UnitFrames.UpdateBuffsHeaderPosition(self, 15)
+        -- end)
     end
 end
 

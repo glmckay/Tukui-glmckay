@@ -64,9 +64,88 @@ local function SetupCenterBar()
 end
 
 
+local function SetupConsumableBar()
+    local Bar = Panels.ActionBar5
+    local Size = 36
+    local Spacing = C.ActionBars.ButtonSpacing
+    local OffsetX = T.UnitFrames.PlayerTargetWidth / 2
+    local NumButtons = 2
+
+    Bar:Size(Size*NumButtons + Spacing * (NumButtons - 1), Size)
+    Bar:ClearAllPoints()
+    Bar:Point("TOP", Panels.UnitFrameAnchor, "BOTTOMLEFT", OffsetX, -FrameSpacing)
+
+    local PrevButton
+    for i = 1,NUM_ACTIONBAR_BUTTONS do
+        local Button = Bar["Button"..i]
+        if (i <= NumButtons) then
+            Button:Size(Size)
+            Button:ClearAllPoints()
+            if (not PrevButton) then
+                Button:Point("TOPLEFT", Bar, "TOPLEFT")
+            else
+                Button:Point("LEFT", PrevButton, "RIGHT", Spacing, 0)
+            end
+            PrevButton = Button
+        else
+            Button:Kill()
+        end
+    end
+
+    -- Tukui moves the pet bar when this bar is shown/hidden.
+    Bar:SetScript("OnShow", nil)
+    Bar:SetScript("OnHide", nil)
+
+    RegisterStateDriver(Bar, "visibility", "[vehicleui][petbattle][overridebar][nocombat,nomod:shift]hide; show")
+end
+
+ActionBars.MovePetBar = function() end
+
+local function MovePetBar()
+    local Bar = T.Panels.PetActionBar
+    local PetSize = C.ActionBars.PetButtonSize
+    local Spacing = C.ActionBars.ButtonSpacing
+
+    Bar:Size(PetSize * 12 + Spacing * 11, PetSize)
+    Bar:ClearAllPoints()
+    Bar:Point("BOTTOM", UIParent, "BOTTOM", 0, 30)
+
+    local PrevButton = nil
+    for i = 1,NUM_PET_ACTION_SLOTS do
+        local Button = Bar["Button"..i]
+
+        Button:ClearAllPoints()
+        if (PrevButton == nil) then
+            Button:Point("TOPLEFT", Bar)
+        else
+            Button:Point("LEFT", PrevButton, "RIGHT", Spacing, 0)
+        end
+
+        PrevButton = Button
+    end
+end
+
+
 -- Get rid of Tukui controls
 ActionBars.CreateToggleButtons = function() end
 ActionBars.LoadVariables = function() end
+
+local function EditVehicleButtons()
+    local VehicleLeft = T.Panels.VehicleButtonLeft
+
+    VehicleLeft:Kill()
+    -- local VehicleRight = T.Panels.VehicleButtonRight
+
+    -- VehicleLeft:ClearAllPoints()
+    -- VehicleLeft:Width(120)
+    -- VehicleLeft:Point("TOPLEFT", T.Panels.DataTextLeft, "TOPRIGHT", FrameSpacing, 0)
+    -- VehicleLeft:Point("TOPLEFT", T.Panels.DataTextLeft, "TOPRIGHT", FrameSpacing, 0)
+
+    -- VehicleRight:ClearAllPoints()
+    -- VehicleRight:Width(120)
+    -- VehicleRight:Point("TOPRIGHT", T.Panels.DataTextRight, "TOPLEFT", -FrameSpacing, 0)
+    -- VehicleRight:Point("TOPRIGHT", T.Panels.DataTextRight, "TOPLEFT", -FrameSpacing, 0)
+end
 
 
 local function BottomRightBarStyle(Bar)
@@ -92,15 +171,15 @@ end
 
 
 -- Always show ActionBar1 (otherwise grid doesn't show properly, maybe because of paging)
-function ActionBars:ShowGrid()
-    for i = 1, NUM_ACTIONBAR_BUTTONS do
-        local Button
+-- function ActionBars:ShowGrid()
+--     for i = 1, NUM_ACTIONBAR_BUTTONS do
+--         local Button
 
-        Button = _G[format("ActionButton%d", i)]
-        Button:SetAttribute("showgrid", 1)
-        ActionButton_ShowGrid(Button)
-    end
-end
+--         Button = _G[format("ActionButton%d", i)]
+--         Button:SetAttribute("showgrid", 1)
+--         ActionButton_ShowGrid(Button)
+--     end
+-- end
 
 
 local function SetExtraActionDefaultPosition()
@@ -130,6 +209,8 @@ local function EnableEdits(self)
         BottomRightBarStyle(self)
         self:ClearAllPoints()
         self:Point("BOTTOMLEFT", Panels.DataTextRight, "TOPLEFT", 0, FrameSpacing)
+
+        MovePetBar()
     end)
 
     BottomRightBarStyle(Bar2)
@@ -144,9 +225,9 @@ local function EnableEdits(self)
     RegisterStateDriver(Bar2, "visibility", "[vehicleui][petbattle][overridebar][nomod:alt]hide; show")
     RegisterStateDriver(Bar3, "visibility", "[vehicleui][petbattle][overridebar][nomod:alt]hide; show")
 
-    UnregisterStateDriver(Bar5, "visibility")
-    Bar5:Kill()
+    SetupConsumableBar()
 end
 
 hooksecurefunc(ActionBars, "Enable", EnableEdits)
 hooksecurefunc(ActionBars, "SetUpExtraActionButton", SetExtraActionDefaultPosition)
+hooksecurefunc(ActionBars, "CreateVehicleButtons", EditVehicleButtons)

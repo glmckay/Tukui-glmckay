@@ -95,21 +95,25 @@ local function EditFocusFocusTargetCommon(self)
         local Buffs = self.Buffs
         local Debuffs = self.Debuffs
 
-        Buffs:ClearAllPoints()
-        Buffs:Point("RIGHT", self, "LEFT", -FrameSpacing, 0)
-        Buffs:SetFrameLevel(self:GetFrameLevel())
-        Buffs:Height(ufHeight)
-        Buffs:Width(3*ufHeight + 2*FrameSpacing)
-        Buffs.size = T.Scale(ufHeight)
-        Buffs.spacing = T.Scale(FrameSpacing)
+        if (Buffs) then
+            Buffs:ClearAllPoints()
+            Buffs:Point("RIGHT", self, "LEFT", -FrameSpacing, 0)
+            Buffs:SetFrameLevel(self:GetFrameLevel())
+            Buffs:Height(ufHeight)
+            Buffs:Width(3*ufHeight + 2*FrameSpacing)
+            Buffs.size = T.Scale(ufHeight)
+            Buffs.spacing = T.Scale(FrameSpacing)
+        end
 
-        Debuffs:ClearAllPoints()
-        Debuffs:Point("LEFT", self, "RIGHT", FrameSpacing, 0)
-        Debuffs:SetFrameLevel(self:GetFrameLevel())
-        Debuffs:Height(ufHeight)
-        Debuffs:Width(5*ufHeight + 4*FrameSpacing)
-        Debuffs.size = T.Scale(ufHeight)
-        Debuffs.spacing = T.Scale(FrameSpacing)
+        if (Debufs) then
+            Debuffs:ClearAllPoints()
+            Debuffs:Point("LEFT", self, "RIGHT", FrameSpacing, 0)
+            Debuffs:SetFrameLevel(self:GetFrameLevel())
+            Debuffs:Height(ufHeight)
+            Debuffs:Width(5*ufHeight + 4*FrameSpacing)
+            Debuffs.size = T.Scale(ufHeight)
+            Debuffs.spacing = T.Scale(FrameSpacing)
+        end
     end
 end
 

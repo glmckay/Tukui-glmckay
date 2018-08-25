@@ -1,13 +1,15 @@
 local T, C, L = unpack(Tukui)
 
-local Nameplates = T["NamePlates"]
+-- Tukui has moved this to the UnitFrames module
 
-local function EditPlate(self, options)
-    local HealthBar = self.healthBar
-    local Name = self.name
+-- local Nameplates = T["NamePlates"]
 
-    HealthBar:CreateBackdrop()
-    Name:SetShadowColor(0, 0, 0)
-end
+-- local function EditPlate(self, options)
+--     local HealthBar = self.healthBar
+--     local Name = self.name
 
-hooksecurefunc(Nameplates, "SetupPlate", EditPlate)
+--     HealthBar:CreateBackdrop()
+--     Name:SetShadowColor(0, 0, 0)
+-- end
+
+-- hooksecurefunc(Nameplates, "SetupPlate", EditPlate)

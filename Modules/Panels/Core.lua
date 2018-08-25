@@ -50,22 +50,34 @@ local function CreateDetailsButton(self)
     Button.Text:Point("BOTTOM", Button, "CENTER", 0, -2)
 end
 
+local BlankBackdrop = {}
+local function EditLeftRightPanel(panel)
+    panel:Width(LeftRightPanelWidth)
+    panel:SetBackdrop(BlankBackdrop)
+end
+
 
 local function EditPanels(self)
-    local BottomLine = self.BottomLine
-    local LeftVerticalLine = self.LeftVerticalLine
-    local RightVerticalLine = self.RightVerticalLine
-    local DataTextLeft = self.DataTextLeft
-    local DataTextRight = self.DataTextRight
+    self.BottomLine:Kill()
 
-    BottomLine:Kill()
-    LeftVerticalLine:Kill()
-    RightVerticalLine:Kill()
+    for _,side in ipairs({ "Left", "Right" }) do
+        local VerticalLine = self[side.."VerticalLine"]
+        local DataText = self["DataText"..side]
+        local ChatBG = self[side.."ChatBG"]
+        local ChatTabsBG = self["TabsBG"..side]
 
-    DataTextLeft:SetBackdrop({})
-    DataTextLeft:Width(LeftRightPanelWidth)
-    DataTextRight:SetBackdrop({})
-    DataTextRight:Width(LeftRightPanelWidth)
+        VerticalLine:Kill()
+
+        DataText:Width(LeftRightPanelWidth)
+        DataText:SetBackdrop({})
+
+        ChatBG:Width(LeftRightPanelWidth)
+        ChatBG.Backdrop:Kill()
+
+        -- 12 is taken from Tukui/Modules/Panels/Core.lua
+        ChatTabsBG:Width(LeftRightPanelWidth - 12)
+        ChatTabsBG:SetBackdrop({})
+    end
 
     local UnitFrameAnchor = CreateFrame("Frame", "TukuiUnitFrameAnchor", self.PetBattleHider)
     UnitFrameAnchor:Point("TOP", UIParent, "CENTER", 0, -160)

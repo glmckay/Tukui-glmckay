@@ -22,6 +22,11 @@ local TukuiAuras = T["Auras"]
 
 local function EditMinimapSize()
     Minimap:Size(C["Maps"]["MinimapSize"])
+
+    WorldMapFrame:HookScript("OnShow", function(self)
+        self:ClearAllPoints()
+        self:SetPoint("LEFT", UIParent, "LEFT", 30, 0)
+    end)
 end
 
 hooksecurefunc(Minimap, "AddZoneAndCoords", EditZoneAndCoords)
