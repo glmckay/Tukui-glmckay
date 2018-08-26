@@ -1,26 +1,37 @@
 local T, C, L = Tukui:unpack()
 
-local Panels = T.Panels
-local UnitFrames = T.UnitFrames
+local Panels = T["Panels"]
+local TukuiUF = T["UnitFrames"]
 
+local FrameSpacing = C.General.FrameSpacing
+
+-- Localised globals
 local gsub = gsub
 local format = format
+local UnitIsConnected = UnitIsConnected
+local UnitIsGhost = UnitIsGhost
+local UnitIsDead = UnitIsDead
 
 
-local borderSize = C.General.BorderSize
-UnitFrames.FrameHeight = 32
+-- UnitFrame dimensions
+TukuiUF.FrameHeight = 32
+TukuiUF.TargetAuraSize = 29
+TukuiUF.TargetAurasPerRow = 8
+TukuiUF.PlayerTargetWidth = TukuiUF.TargetAuraSize*TukuiUF.TargetAurasPerRow + FrameSpacing*(TukuiUF.TargetAurasPerRow - 1)
+TukuiUF.PetTotWidth = 90
+TukuiUF.OtherHeight = 30
+TukuiUF.OtherWidth = 200
+TukuiUF.PowerHeight = 2
 
-local ufSpacing = C.General.FrameSpacing
-local ufYoffset = -160
 
 -- Empty table for class specific functions
-UnitFrames.EditClassFeatures = {}
+TukuiUF.EditClassFeatures = {}
 
 
 -- Notes: 1- The Tukui version of ShortValue uses a local "Value" which seems unnecessary
 --           I left it out, maybe something weird will happen so I can learn why it was there.
 --        2- Conditionals are (hopefully) ordered from most to least likely
-function UnitFrames:ShortValue()
+function TukuiUF:ShortValue()
     if self < 1e3 then
         return self
     elseif self < 2e4 then
@@ -39,9 +50,27 @@ function UnitFrames:ShortValue()
 end
 
 
+function TukuiUF:PlayerTargetPostUpdateHealth(unit, min, max)
+    if (not UnitIsConnected(unit)) then
+        self.Value:SetText("|cffD7BEA5"..FRIENDS_LIST_OFFLINE.."|r")
+    elseif (UnitIsDead(unit)) then
+        self.Value:SetText("|cffD7BEA5"..DEAD.."|r")
+    elseif (UnitIsGhost(unit)) then
+        self.Value:SetText("|cffD7BEA5"..L.UnitFrames.Ghost.."|r")
+    else
+        self.Value:SetText(TukuiUF.ShortValue(min))
+        self.Percent:SetFormattedText("%s%%", floor(min / max * 100))
+    end
+end
+
+-- Remove this function
+function TukuiUF:UpdateNamePosition()
+end
+
+
 -- Create a macro-style conditional for the player's roles (cache the string since it won't change)
 --  Conditional returns same strings as GetSpecializationRole ("TANK", "DAMAGER", "HEALER") or "ERROR" (shouldn't happen)
-function UnitFrames:GetRoleConditional()
+function TukuiUF:GetRoleConditional()
     if (not self._RoleConditionalString) then
         local NumSpecs = GetNumSpecializations()
         local RoleSpecs = {}
@@ -64,7 +93,7 @@ function UnitFrames:GetRoleConditional()
 end
 
 
-function UnitFrames:CheckInterrupt(unit)
+function TukuiUF:CheckInterrupt(unit)
     if (unit == "vehicle") then
         unit = "player"
     end
@@ -98,12 +127,12 @@ local function CreateUnits(self)
 
         Pet:ClearAllPoints()
         Pet:SetParent(Panels.UnitFrameAnchor)
-        Pet:Point("RIGHT", Panels.UnitFrameAnchor, "LEFT", -ufSpacing, 0)
+        Pet:Point("RIGHT", Panels.UnitFrameAnchor, "LEFT", -FrameSpacing, 0)
         Pet:Size(self.PetTotWidth, self.FrameHeight)
 
         ToT:ClearAllPoints()
         ToT:SetParent(Panels.UnitFrameAnchor)
-        ToT:Point("LEFT", Panels.UnitFrameAnchor, "RIGHT", ufSpacing, 0)
+        ToT:Point("LEFT", Panels.UnitFrameAnchor, "RIGHT", FrameSpacing, 0)
         ToT:Size(self.PetTotWidth, self.FrameHeight)
 
         Focus:ClearAllPoints()
@@ -115,7 +144,7 @@ local function CreateUnits(self)
         FocusTarget:Size(self.OtherWidth, self.OtherHeight)
 
         if (C.UnitFrames.Arena) then
-            local Arena = UnitFrames.Units.Arena
+            local Arena = TukuiUF.Units.Arena
 
             for i = 1, 5 do
                 Arena[i]:ClearAllPoints()
@@ -129,7 +158,7 @@ local function CreateUnits(self)
         end
 
         if (C.UnitFrames.Boss) then
-            local Boss = UnitFrames.Units.Boss
+            local Boss = TukuiUF.Units.Boss
 
             for i = 1, 5 do
                 Boss[i]:ClearAllPoints()
@@ -143,13 +172,13 @@ local function CreateUnits(self)
         end
 
         if (C.Raid.Enable) then
-            local Raid = UnitFrames.Headers.Raid
+            local Raid = TukuiUF.Headers.Raid
 
             if (C.Raid.ShowPets) then
-                local Pets = UnitFrames.Headers.RaidPet
+                local Pets = TukuiUF.Headers.RaidPet
 
                 Pets:ClearAllPoints()
-                Pets:Point("TOPRIGHT", Raid, "TOPLEFT", -ufSpacing, 0)
+                Pets:Point("TOPRIGHT", Raid, "TOPLEFT", -FrameSpacing, 0)
             end
         end
     end
@@ -160,7 +189,7 @@ local function CreateUnits(self)
 end
 
 
-function UnitFrames:GetPartyFramesAttributes()
+function TukuiUF:GetPartyFramesAttributes()
     return
         "TukuiParty",
         nil,
@@ -180,12 +209,12 @@ function UnitFrames:GetPartyFramesAttributes()
         "groupingOrder", "1,2,3,4,5,6,7,8",
         "groupBy", "GROUP",
         "point", "LEFT",
-        "xOffset", T.Scale(ufSpacing),
-        "yOffset", T.Scale(-ufSpacing)
+        "xOffset", T.Scale(FrameSpacing),
+        "yOffset", T.Scale(-FrameSpacing)
 end
 
 
-function UnitFrames:GetRaidFramesAttributes()
+function TukuiUF:GetRaidFramesAttributes()
     local Properties = C.Party.Enable and "raid" or "solo,party,raid"
     -- local Properties = string.format("custom %s show;hide", self:GetHealerConditional())
 
@@ -204,20 +233,20 @@ function UnitFrames:GetRaidFramesAttributes()
         "showRaid", true,
         "showPlayer", true,
         "showSolo", C["Raid"].ShowSolo,
-        "xoffset", T.Scale(ufSpacing),
-        "yOffset", T.Scale(-ufSpacing),
+        "xoffset", T.Scale(FrameSpacing),
+        "yOffset", T.Scale(-FrameSpacing),
         "point", "LEFT",
         "groupFilter", "1,2,3,4,5,6,7,8",
         "groupingOrder", "1,2,3,4,5,6,7,8",
         "groupBy", C["Raid"].GroupBy.Value,
         "maxColumns", math.ceil( 40 / C["Raid"].MaxUnitPerColumn),
         "unitsPerColumn", C["Raid"].MaxUnitPerColumn,
-        "columnSpacing", T.Scale(ufSpacing),
+        "columnSpacing", T.Scale(FrameSpacing),
         "columnAnchorPoint", "TOP"
 end
 
 
-function UnitFrames:GetPetRaidFramesAttributes()
+function TukuiUF:GetPetRaidFramesAttributes()
     local Properties = C.Party.Enable and "custom [@raid6,exists] show;hide" or "custom [@raid26,exists] hide;show"
 
     return
@@ -230,10 +259,10 @@ function UnitFrames:GetPetRaidFramesAttributes()
         "maxColumns", math.ceil(40 / C["Raid"].MaxUnitPerColumn),
         "point", "TOP",
         "unitsPerColumn", C["Raid"].MaxUnitPerColumn,
-        "columnSpacing", T.Scale(ufSpacing),
+        "columnSpacing", T.Scale(FrameSpacing),
         "columnAnchorPoint", "RIGHT",
-        "xOffset", T.Scale(ufSpacing),
-        "yOffset", T.Scale(-ufSpacing),
+        "xOffset", T.Scale(FrameSpacing),
+        "yOffset", T.Scale(-FrameSpacing),
         "initial-width", self.GridWidth,
         "initial-height", self.GridMaxHeight,
         "oUF-initialConfigFunction", [[
@@ -252,17 +281,14 @@ local function PostCreateAura(self, button)
 end
 
 
-function UnitFrames:UpdateDebuffsHeaderPosition()
+function TukuiUF:UpdateDebuffsHeaderPosition()
     local NumBuffs = self.visibleBuffs
-    local PerRow = self.numRow
-    local Size = self.size
-    local Row = math.ceil((NumBuffs / PerRow))
-    local Parent = self:GetParent()
-    local Debuffs = Parent.Debuffs
-    local Y = Size * Row
+    local Row = math.ceil((NumBuffs / self.numRow))
+    local Debuffs = self:GetParent().Debuffs
+    local Y = self.size * Row
     local Offset = 3
 
-    if NumBuffs == 0 then
+    if (NumBuffs == 0) then -- No buffs
         Offset = 14
     end
 
@@ -271,7 +297,7 @@ function UnitFrames:UpdateDebuffsHeaderPosition()
 end
 
 
-function UnitFrames:Highlight()
+function TukuiUF:Highlight()
     if UnitIsUnit("focus", self.unit) then
         self.Highlight:SetBackdropBorderColor(218 / 255, 197 / 255, 92 / 255, .7)
         self.Highlight:Show()
@@ -287,7 +313,7 @@ end
 -- All the stuff that needs to be changed with spec and does not need a protected environment
 -- This might end up getting moved somewhere else since it's not strictly unitframe stuff
 local PrevSpec = 0
-function UnitFrames:AdjustForSpec()
+function TukuiUF:AdjustForSpec()
     local NewSpec = GetSpecialization()
     if (NewSpec == PrevSpec) then return end
 
@@ -318,7 +344,7 @@ end
 
 
 
-function UnitFrames:SetupPartyRoleSwtich()
+function TukuiUF:SetupPartyRoleSwtich()
     -- Hook OnAttributeChanged to easily do non-protected update
     self.Headers.Party:HookScript("OnAttributeChanged", function(self, attr, value)
         if (attr == "framestyle") then
@@ -384,7 +410,7 @@ function UnitFrames:SetupPartyRoleSwtich()
 end
 
 
-function UnitFrames:SetupRaidRoleSwtich()
+function TukuiUF:SetupRaidRoleSwtich()
 --shortstat-- Hook OnAttributeChanged to easily do non-protected update
     self.Headers.Raid:HookScript("OnAttributeChanged", function(self, attr, value)
         if (attr == "framestyle") then
@@ -504,7 +530,7 @@ function UnitFrames:SetupRaidRoleSwtich()
 end
 
 
-function UnitFrames:EnableEdits()
+function EnableEdits(self)
     if (not C.UnitFrames.Enable) then
         return
     end
@@ -538,7 +564,7 @@ function UnitFrames:EnableEdits()
     RegisterStateDriver(SecureSpecAdjuster, "role", self:GetRoleConditional())
     local UnitFrameAdjuster = CreateFrame("Frame", nil, UIParent)
     UnitFrameAdjuster:SetScript("OnEvent", function(self, event)
-        UnitFrames:AdjustForSpec()
+        TukuiUF:AdjustForSpec()
     end)
     UnitFrameAdjuster:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 
@@ -551,8 +577,8 @@ end
 
 
 
-hooksecurefunc(UnitFrames, "CreateUnits", CreateUnits)
-hooksecurefunc(UnitFrames, "PostCreateAura", PostCreateAura)
-hooksecurefunc(UnitFrames, "Enable", UnitFrames.EnableEdits)
+hooksecurefunc(TukuiUF, "CreateUnits", CreateUnits)
+hooksecurefunc(TukuiUF, "PostCreateAura", PostCreateAura)
+hooksecurefunc(TukuiUF, "Enable", EnableEdits)
 
 

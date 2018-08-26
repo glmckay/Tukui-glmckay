@@ -1,12 +1,10 @@
 local T, C, L = Tukui:unpack()
 
-local UnitFrames = T.UnitFrames
-local DummyFcn = function() end
+local TukuiUF = T.UnitFrames
+local Noop = function() end
 
 local NameFont = T.GetFont(C["UnitFrames"].Font)
 local FontOffset = C["Medias"].FontOffset
-
-UnitFrames.PetTotWidth = 90
 
 
 local function EditPetTotCommon(self)
@@ -20,13 +18,17 @@ local function EditPetTotCommon(self)
     Health:ClearAllPoints()
     Health:SetInside(self)
 
+    -- Power
+    if (self.Power) then
+        self.Power:Kill()
+        self.Power = nil
+    end
+
     -- Create new Name since we killed the panel
     local Name = Health:CreateFontString(nil, "OVERLAY")
     Name:Point("CENTER", Health, "CENTER", 0, FontOffset)
     Name:SetJustifyH("CENTER")
     Name:SetFontObject(NameFont)
-
-    UnitFrames.UpdateNamePosition = DummyFcn
 
     if (C.UnitFrames.DarkTheme) then
         Health:SetStatusBarColor(.25, .25, .25)
@@ -39,26 +41,7 @@ local function EditPetTotCommon(self)
     local RaidIcon = self.RaidTargetIndicator
     RaidIcon:ClearAllPoints()
     RaidIcon:Point("CENTER", self, "BOTTOM", 0, 12)
-
 end
 
-
-local function EditTargetOfTarget(self)
-    EditPetTotCommon(self)
-end
-
-
-local function EditPet(self)
-    EditPetTotCommon(self)
-
-    local Power = self.Power
-    -- Power
-    if (Power) then
-        self.Power = nil
-        Power:Kill()
-    end
-end
-
-
-hooksecurefunc(UnitFrames, "TargetOfTarget", EditTargetOfTarget)
-hooksecurefunc(UnitFrames, "Pet", EditPet)
+hooksecurefunc(TukuiUF, "TargetOfTarget", EditPetTotCommon)
+hooksecurefunc(TukuiUF, "Pet", EditPetTotCommon)

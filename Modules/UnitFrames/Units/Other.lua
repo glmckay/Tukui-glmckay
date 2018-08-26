@@ -1,15 +1,14 @@
 local T, C, L = Tukui:unpack()
 
-local UnitFrames = T.UnitFrames
-local DummyFcn = function() end
+local TukuiUF = T.UnitFrames
 
 local FrameSpacing = C.General.FrameSpacing
 local BorderSize = C.General.BorderSize
-local ufHeight = 30
-local powerHeight = 2
 
-UnitFrames.OtherWidth = 200
-UnitFrames.OtherHeight = ufHeight
+local FrameHeight = TukuiUF.OtherHeight
+local PowerHeight = TukuiUF.PowerHeight
+local NumBuffs = 3
+local NumDebuffs = 5
 
 
 local function PostUpdateHealth(self, unit, min, max)
@@ -23,9 +22,9 @@ local function PostUpdateHealth(self, unit, min, max)
         end
     else
         if (min ~= max) then
-            self.Value:SetFormattedText("%s - %s%%", UnitFrames.ShortValue(min), floor(min / max * 100))
+            self.Value:SetFormattedText("%s - %s%%", TukuiUF.ShortValue(min), floor(min / max * 100))
         else
-            self.Value:SetText(UnitFrames.ShortValue(min))
+            self.Value:SetText(TukuiUF.ShortValue(min))
         end
     end
 end
@@ -34,15 +33,13 @@ end
 local function BossPostUpdatePower(self, unit, min, max)
     if (min > 0) then
         if (self.LastAlpha ~= 1) then
-            local Parent = self:GetParent()
-            Parent.Health:Height(ufHeight - powerHeight - 3*BorderSize)
+            self:GetParent().Health:Height(FrameHeight - PowerHeight - 3*BorderSize)
             self:SetAlpha(1)
             self.LastAlpha = 1
         end
     else
         if (self.LastAlpha ~= 0) then
-            local Parent = self:GetParent()
-            Parent.Health:Height(ufHeight - 2*BorderSize)
+            self:GetParent().Health:Height(FrameHeight - 2*BorderSize)
             self:SetAlpha(0)
             self.LastAlpha = 0
         end
@@ -99,9 +96,10 @@ local function EditFocusFocusTargetCommon(self)
             Buffs:ClearAllPoints()
             Buffs:Point("RIGHT", self, "LEFT", -FrameSpacing, 0)
             Buffs:SetFrameLevel(self:GetFrameLevel())
-            Buffs:Height(ufHeight)
-            Buffs:Width(3*ufHeight + 2*FrameSpacing)
-            Buffs.size = T.Scale(ufHeight)
+            Buffs:Height(FrameHeight)
+            Buffs:Width(FrameHeight*NumBuffs + FrameSpacing*(NumBuffs-1))
+            Buffs.num = NumBuffs
+            Buffs.size = T.Scale(FrameHeight)
             Buffs.spacing = T.Scale(FrameSpacing)
         end
 
@@ -109,9 +107,10 @@ local function EditFocusFocusTargetCommon(self)
             Debuffs:ClearAllPoints()
             Debuffs:Point("LEFT", self, "RIGHT", FrameSpacing, 0)
             Debuffs:SetFrameLevel(self:GetFrameLevel())
-            Debuffs:Height(ufHeight)
-            Debuffs:Width(5*ufHeight + 4*FrameSpacing)
-            Debuffs.size = T.Scale(ufHeight)
+            Debuffs:Height(FrameHeight)
+            Debuffs:Width(FrameHeight*NumDebuffs + FrameSpacing*(NumDebuffs-1))
+            Debuffs.num = NumDebuffs
+            Debuffs.size = T.Scale(FrameHeight)
             Debuffs.spacing = T.Scale(FrameSpacing)
         end
     end
@@ -163,11 +162,11 @@ local function EditArenaBossCommon(self)
     Health:ClearAllPoints()
     Health:Point("TOPLEFT", self, BorderSize, -BorderSize)
     Health:Point("TOPRIGHT", self, -BorderSize, -BorderSize)
-    Health:Height(ufHeight - 2*BorderSize)
+    Health:Height(FrameHeight - 2*BorderSize)
 
     -- Power
     Power:ClearAllPoints()
-    Power:Height(powerHeight)
+    Power:Height(PowerHeight)
     Power:Point("BOTTOMLEFT", self, BorderSize, BorderSize)
     Power:Point("BOTTOMRIGHT", self, -BorderSize, BorderSize)
 
@@ -196,7 +195,7 @@ local function EditArenaBossCommon(self)
         CastBar.Time:Point("RIGHT", CastBar, "RIGHT", -2, 0)
 
         CastBar.Text:ClearAllPoints()
-        CastBar.Text:SetWidth(UnitFrames.OtherWidth - 50)
+        CastBar.Text:SetWidth(TukuiUF.OtherWidth - 50)
         CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
 
         CastBar.Button:Kill()
@@ -217,19 +216,20 @@ local function EditArena(self)
         Debuffs:ClearAllPoints()
         Debuffs:Point("LEFT", self, "RIGHT", FrameSpacing, 0)
         Debuffs:SetFrameLevel(self:GetFrameLevel())
-        Debuffs:Height(ufHeight)
-        Debuffs:Width(5*ufHeight + 4*BorderSize)
-        Debuffs.size = T.Scale(ufHeight)
+        Debuffs:Height(FrameHeight)
+        Debuffs:Width(FrameHeight*NumDebuffs + FrameSpacing*(NumDebuffs-1))
+        Debuffs.num = NumDebuffs
+        Debuffs.size = T.Scale(FrameHeight)
         Debuffs.spacing = T.Scale(FrameSpacing)
     end
 
     SpecIcon:ClearAllPoints()
-    SpecIcon:Size(ufHeight - 2*BorderSize)
+    SpecIcon:Size(FrameHeight - 2*BorderSize)
     SpecIcon:Point("RIGHT", self, "LEFT", -(1 + BorderSize), 0)
 
     Trinket:ClearAllPoints()
-    Trinket:Size(ufHeight - 2*BorderSize)
-    Trinket:Point("RIGHT", self, "LEFT", -(ufHeight + 1), 0)
+    Trinket:Size(FrameHeight - 2*BorderSize)
+    Trinket:Point("RIGHT", self, "LEFT", -(FrameHeight + 1), 0)
 end
 
 
@@ -245,23 +245,25 @@ local function EditBoss(self)
         Buffs:ClearAllPoints()
         Buffs:Point("RIGHT", self, "LEFT", -FrameSpacing, 0)
         Buffs:SetFrameLevel(self:GetFrameLevel())
-        Buffs:Height(ufHeight)
-        Buffs:Width(3*ufHeight + 2*BorderSize)
-        Buffs.size = T.Scale(ufHeight)
+        Buffs:Height(FrameHeight)
+        Buffs:Width(FrameHeight*NumBuffs + FrameSpacing*(NumBuffs-1))
+        Buffs.num = NumBuffs
+        Buffs.size = T.Scale(FrameHeight)
         Buffs.spacing = T.Scale(FrameSpacing)
 
         Debuffs:ClearAllPoints()
         Debuffs:Point("LEFT", self, "RIGHT", FrameSpacing, 0)
         Debuffs:SetFrameLevel(self:GetFrameLevel())
-        Debuffs:Height(ufHeight)
-        Debuffs:Width(5*ufHeight + 4*BorderSize)
-        Debuffs.size = T.Scale(ufHeight)
+        Debuffs:Height(FrameHeight)
+        Debuffs:Width(FrameHeight*NumDebuffs + FrameSpacing*(NumDebuffs-1))
+        Debuffs.num = NumDebuffs
+        Debuffs.size = T.Scale(FrameHeight)
         Debuffs.spacing = T.Scale(FrameSpacing)
     end
 end
 
 
-hooksecurefunc(UnitFrames, "Focus", EditFocus)
-hooksecurefunc(UnitFrames, "FocusTarget", EditFocusTarget)
-hooksecurefunc(UnitFrames, "Arena", EditArena)
-hooksecurefunc(UnitFrames, "Boss", EditBoss)
+hooksecurefunc(TukuiUF, "Focus", EditFocus)
+hooksecurefunc(TukuiUF, "FocusTarget", EditFocusTarget)
+hooksecurefunc(TukuiUF, "Arena", EditArena)
+hooksecurefunc(TukuiUF, "Boss", EditBoss)

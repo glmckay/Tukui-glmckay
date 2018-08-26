@@ -1,7 +1,7 @@
 local T, C, L = unpack(Tukui)
 
 local Panels = T["Panels"]
-local UnitFrames = T.UnitFrames
+local TukuiUF = T["UnitFrames"]
 
 local BorderSize = C["General"].BorderSize
 local FrameSpacing = C["General"].FrameSpacing
@@ -81,7 +81,7 @@ local function EditPanels(self)
 
     local UnitFrameAnchor = CreateFrame("Frame", "TukuiUnitFrameAnchor", self.PetBattleHider)
     UnitFrameAnchor:Point("TOP", UIParent, "CENTER", 0, -160)
-    UnitFrameAnchor:Size(64 + Panels.CenterPanelWidth + 2*UnitFrames.PlayerTargetWidth, UnitFrames.FrameHeight)
+    UnitFrameAnchor:Size(64 + Panels.CenterPanelWidth + 2*TukuiUF.PlayerTargetWidth, TukuiUF.FrameHeight)
 
     local DataTextCenter =  CreateFrame("Frame", "TukuiCenterDataTextBox", UIParent)
     DataTextCenter:Size(600, 23)
@@ -94,7 +94,5 @@ local function EditPanels(self)
 
     CreateDetailsButton(self)
 end
-
-
 
 hooksecurefunc(T["Panels"], "Enable", EditPanels)

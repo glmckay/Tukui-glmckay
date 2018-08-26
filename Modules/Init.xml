@@ -29,9 +29,10 @@
 
     <Script file="UnitFrames\Core.lua"/>
     <Script file="UnitFrames\Units\Nameplates.lua"/>
-    <Script file="UnitFrames\Units\Player_Target.lua"/>
-    <Script file="UnitFrames\Units\Pet_Tot.lua"/>
     <Script file="UnitFrames\Units\Other.lua"/>
+    <Script file="UnitFrames\Units\Pet_Tot.lua"/>
+    <Script file="UnitFrames\Units\Player.lua"/>
+    <Script file="UnitFrames\Units\Target.lua"/>
     <Script file="UnitFrames\Groups\Party.lua"/>
     <Script file="UnitFrames\Groups\Raid.lua"/>
     <Script file="UnitFrames\Classes\DeathKnight.lua"/>

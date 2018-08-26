@@ -11,7 +11,6 @@ C["General"]["HideShadows"] = true
 C["ActionBars"]["NormalButtonSize"] = 30
 C["ActionBars"]["PetButtonSize"] = 27
 C["ActionBars"]["CenterButtonSize"] = 40            -- Added
-C["ActionBars"]["PlayerButtonSize"] = 29
 C["ActionBars"]["ShapeShift"] = false
 C["ActionBars"]["HotKey"] = true
 C["ActionBars"]["HideBackdrop"] = true
