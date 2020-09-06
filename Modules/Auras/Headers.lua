@@ -14,7 +14,7 @@ local BorderSize = C.General.BorderSize
 
 
 -- Long note:
---  Auras are "secure objects" (or something like that) so their size is protected in combat.
+--  Auras are "secure objects" so their size is protected in combat.
 --  To change their size we need to modify the intialconfigfunction or the TukuiAurasTemplate.
 --  I used to use the fact that Skin was called before the initialconfigfunction was chcked by
 --  blizzard's header code, but now this seems to create a bug (I blame blizz). So now we wrap

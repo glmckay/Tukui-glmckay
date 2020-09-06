@@ -3,6 +3,7 @@ local T, C, L = Tukui:unpack()
 local Panels = T["Panels"]
 local TukuiUF = T["UnitFrames"]
 
+local BorderSize = C.General.BorderSize
 local FrameSpacing = C.General.FrameSpacing
 
 -- Localised globals
@@ -17,7 +18,7 @@ local UnitIsDead = UnitIsDead
 TukuiUF.FrameHeight = 32
 TukuiUF.TargetAuraSize = 29
 TukuiUF.TargetAurasPerRow = 8
-TukuiUF.PlayerTargetWidth = TukuiUF.TargetAuraSize*TukuiUF.TargetAurasPerRow + FrameSpacing*(TukuiUF.TargetAurasPerRow - 1)
+TukuiUF.PlayerTargetWidth = TukuiUF.TargetAuraSize*TukuiUF.TargetAurasPerRow + FrameSpacing*(TukuiUF.TargetAurasPerRow - 1) + 2*BorderSize
 TukuiUF.PetTotWidth = 90
 TukuiUF.OtherHeight = 30
 TukuiUF.OtherWidth = 200
@@ -27,22 +28,21 @@ TukuiUF.PowerHeight = 2
 -- Empty table for class specific functions
 TukuiUF.EditClassFeatures = {}
 
-
 -- Notes: 1- The Tukui version of ShortValue uses a local "Value" which seems unnecessary
 --           I left it out, maybe something weird will happen so I can learn why it was there.
 --        2- Conditionals are (hopefully) ordered from most to least likely
 function TukuiUF:ShortValue()
     if self < 1e3 then
         return self
-    elseif self < 2e4 then
+    elseif self < 1e4 then
         return gsub(format("%.1fK", self / 1e3), "%.?0+([KMB])$", "%1")
     elseif self < 1e6 then
         return ("%dK"):format(self / 1e3)
-    elseif self < 2e7 then
+    elseif self < 1e7 then
         return gsub(format("%.1fM", self / 1e6), "%.?0+([KMB])$", "%1")
     elseif self < 1e9 then
         return format("%dM", self / 1e6)
-    elseif self < 2e10 then
+    elseif self < 1e10 then
         return gsub(format("%.1fB", self / 1e9), "%.?0+([KMB])$", "%1")
     else
         return format("%dB", self / 1e9)
@@ -63,9 +63,9 @@ function TukuiUF:PlayerTargetPostUpdateHealth(unit, min, max)
     end
 end
 
+
 -- Remove this function
-function TukuiUF:UpdateNamePosition()
-end
+function TukuiUF:UpdateNamePosition() end
 
 
 -- Create a macro-style conditional for the player's roles (cache the string since it won't change)
@@ -182,10 +182,6 @@ local function CreateUnits(self)
             end
         end
     end
-
-    if (C.NamePlates.Enable) then
-        -- Nameplate stuff
-    end
 end
 
 
@@ -216,7 +212,6 @@ end
 
 function TukuiUF:GetRaidFramesAttributes()
     local Properties = C.Party.Enable and "raid" or "solo,party,raid"
-    -- local Properties = string.format("custom %s show;hide", self:GetHealerConditional())
 
     return
         "TukuiRaid",
@@ -275,7 +270,6 @@ end
 
 -- Skin Auras
 local function PostCreateAura(self, button)
-    -- button:HideInsets()
     button.cd:SetInside()
     button.icon:SetInside()
 end
@@ -411,7 +405,7 @@ end
 
 
 function TukuiUF:SetupRaidRoleSwtich()
---shortstat-- Hook OnAttributeChanged to easily do non-protected update
+    -- Hook OnAttributeChanged to easily do non-protected update
     self.Headers.Raid:HookScript("OnAttributeChanged", function(self, attr, value)
         if (attr == "framestyle") then
             local frames = { self:GetChildren() }
@@ -460,7 +454,6 @@ function TukuiUF:SetupRaidRoleSwtich()
         header:SetAttribute("initial-height", h)
     ]]
 
-    -- SecureRaidAdjuster:SetFrameRef("ListHeader", self.Headers.Party)
     SecureRaidAdjuster:SetFrameRef("RaidHeader", self.Headers.Raid)
 
     SecureRaidAdjuster:SetAttribute("_onstate-groups", string.format([[
@@ -535,9 +528,6 @@ function EnableEdits(self)
         return
     end
 
-    -- For namplates
-    -- self:CreateTankListFrame()
-
     if (C.Party.Enable) then
         self:SetupPartyRoleSwtich()
     end
@@ -550,16 +540,18 @@ function EnableEdits(self)
     local SecureSpecAdjuster = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
     SecureSpecAdjuster:SetFrameRef("ufAnchor", Panels.UnitFrameAnchor)
 
-    SecureSpecAdjuster:SetAttribute("_onstate-role", [[
+    SecureSpecAdjuster:SetAttribute("_onstate-role", string.format([[
         -- Note: Arguments are self, stateid, newstate
         local ufAnchor = self:GetFrameRef("ufAnchor")
+        local xOffset = %f
 
         if (newstate == "HEALER") then
-            ufAnchor:SetPoint("TOP", UIParent, "CENTER", 0, -160)
+            ufAnchor:SetPoint("TOP", UIParent, "CENTER", xOffset, -160)
         else
-            ufAnchor:SetPoint("TOP", UIParent, "CENTER", 0, -(160 + ufAnchor:GetHeight()))
+            ufAnchor:SetPoint("TOP", UIParent, "CENTER", xOffset, -(160 + ufAnchor:GetHeight()))
         end
-        ]])
+        ]], (Panels.CenterPanelWidth % 2 == 1 and 0.5) or 0 -- Shift by half a pixel for odd width
+    ))
 
     RegisterStateDriver(SecureSpecAdjuster, "role", self:GetRoleConditional())
     local UnitFrameAdjuster = CreateFrame("Frame", nil, UIParent)

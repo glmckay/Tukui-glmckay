@@ -30,18 +30,46 @@ local function PostUpdateHealth(self, unit, min, max)
 end
 
 
+local function UpdateBars(self)
+    local NumPowerBars = 0
+    if (self.Power.BarShown) then NumPowerBars = 1 end
+    if (self.AltPower.BarShown) then NumPowerBars = NumPowerBars + 1 end
+
+    self.Health:Height(FrameHeight - 2*BorderSize - NumPowerBars*(TukuiUF.PowerHeight + BorderSize))
+end
+
+
 local function BossPostUpdatePower(self, unit, min, max)
     if (min > 0) then
         if (self.LastAlpha ~= 1) then
-            self:GetParent().Health:Height(FrameHeight - PowerHeight - 3*BorderSize)
             self:SetAlpha(1)
             self.LastAlpha = 1
+            UpdateBars(self:GetParent())
         end
     else
         if (self.LastAlpha ~= 0) then
-            self:GetParent().Health:Height(FrameHeight - 2*BorderSize)
             self:SetAlpha(0)
             self.LastAlpha = 0
+            UpdateBars(self:GetParent())
+        end
+    end
+end
+
+
+local function BossPostUpdateAltPower(self, min, cur, max)
+    if (not cur) or (not max) then return end
+
+    if (min ~= cur) then
+        if (self.BarShown == false) then
+            self:SetAlpha(1)
+            self.BarShown = true
+            UpdateBars(self:GetParent())
+        end
+    else
+        if (self.BarShown == true) then
+            self:SetAlpha(0)
+            self.BarShown = false
+            UpdateBars(self:GetParent())
         end
     end
 end
@@ -103,7 +131,7 @@ local function EditFocusFocusTargetCommon(self)
             Buffs.spacing = T.Scale(FrameSpacing)
         end
 
-        if (Debufs) then
+        if (Debuffs) then
             Debuffs:ClearAllPoints()
             Debuffs:Point("LEFT", self, "RIGHT", FrameSpacing, 0)
             Debuffs:SetFrameLevel(self:GetFrameLevel())
@@ -162,13 +190,14 @@ local function EditArenaBossCommon(self)
     Health:ClearAllPoints()
     Health:Point("TOPLEFT", self, BorderSize, -BorderSize)
     Health:Point("TOPRIGHT", self, -BorderSize, -BorderSize)
-    Health:Height(FrameHeight - 2*BorderSize)
+    Health:Height(FrameHeight - PowerHeight - 3*BorderSize)
 
     -- Power
     Power:ClearAllPoints()
     Power:Height(PowerHeight)
     Power:Point("BOTTOMLEFT", self, BorderSize, BorderSize)
     Power:Point("BOTTOMRIGHT", self, -BorderSize, BorderSize)
+    Power:SetFrameLevel(Health:GetFrameLevel() + 2)
 
     Power.Value:Kill()
     Power.Value = nil
@@ -237,6 +266,7 @@ local function EditBoss(self)
     EditArenaBossCommon(self)
 
     self.Power.PostUpdate = PostUpdatePower
+    self.AlternativePower.PostUpdate = BossPostUpdateAltPower
 
     if (C.UnitFrames.BossAuras) then
         local Buffs = self.Buffs

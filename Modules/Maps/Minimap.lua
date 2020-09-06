@@ -9,13 +9,13 @@ local function EditZoneAndCoords(self)
     local Coords = Minimap.MinimapCoords
 
     Zone:SetBackdrop({})
-    Zone.Text:SetFont(C["Medias"].GNBold, 13, "OUTLINE")
+    Zone.Text:SetFont(C["Medias"].RegFont, 16, "OUTLINE")
     -- Zone.Text:SetParent(Minimap) -- If I want the zone to always be shown
     Zone.Text:ClearAllPoints()
     Zone.Text:Point("CENTER", Minimap, "TOP", 0, 1)
 
     Coords:SetBackdrop({})
-    Coords.Text:SetFont(C["Medias"].GNBold, 12, "OUTLINE")
+    Coords.Text:SetFont(C["Medias"].RegFont, 14, "OUTLINE")
 end
 
 local TukuiAuras = T["Auras"]

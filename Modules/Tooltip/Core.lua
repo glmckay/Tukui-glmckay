@@ -62,7 +62,7 @@ local function EnableEdits(self)
     HealthBar:Point("BOTTOMLEFT", HealthBar:GetParent(), "TOPLEFT", BorderSize, BorderSize + FrameSpacing)
     HealthBar:Point("BOTTOMRIGHT", HealthBar:GetParent(), "TOPRIGHT", -BorderSize, BorderSize + FrameSpacing)
 
-    HealthBar.Text:Point("CENTER", HealthBar, "CENTER", 0, 7 + C["Medias"].FontOffset)
+    HealthBar.Text:Point("CENTER", HealthBar, "CENTER", 0, 7)
 end
 
 

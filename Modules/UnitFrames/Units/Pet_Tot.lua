@@ -4,7 +4,6 @@ local TukuiUF = T.UnitFrames
 local Noop = function() end
 
 local NameFont = T.GetFont(C["UnitFrames"].Font)
-local FontOffset = C["Medias"].FontOffset
 
 
 local function EditPetTotCommon(self)
@@ -18,6 +17,9 @@ local function EditPetTotCommon(self)
     Health:ClearAllPoints()
     Health:SetInside(self)
 
+    Health.Background:Kill()
+    Health.bg = nil
+
     -- Power
     if (self.Power) then
         self.Power:Kill()
@@ -26,7 +28,7 @@ local function EditPetTotCommon(self)
 
     -- Create new Name since we killed the panel
     local Name = Health:CreateFontString(nil, "OVERLAY")
-    Name:Point("CENTER", Health, "CENTER", 0, FontOffset)
+    Name:Point("CENTER", Health, "CENTER", 0, 0)
     Name:SetJustifyH("CENTER")
     Name:SetFontObject(NameFont)
 

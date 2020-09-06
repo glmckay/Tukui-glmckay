@@ -60,6 +60,10 @@ end
 local function EditPanels(self)
     self.BottomLine:Kill()
 
+    -- SetPoint because we don't want these numbers rounded
+    self.DataTextRight:SetPoint("RIGHT", self.BottomLine, -4, -0.5)
+    self.DataTextLeft:SetPoint("LEFT", self.BottomLine, 4, -0.5)
+
     for _,side in ipairs({ "Left", "Right" }) do
         local VerticalLine = self[side.."VerticalLine"]
         local DataText = self["DataText"..side]

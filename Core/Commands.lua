@@ -17,3 +17,11 @@ end
 
 SLASH_GETSPELLID1 = "/GetSpellId"
 SlashCmdList["GETSPELLID"] = T.GetSpellId
+
+
+T.testy = function(y)
+    T.Panels.DataTextRight:Point("RIGHT", T.Panels.BottomLine, -4, -y)
+end
+
+SLASH_TESTY1 = "/testy"
+SlashCmdList["TESTY"] = T.testy

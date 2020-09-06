@@ -83,10 +83,12 @@ end
 
 
 local function UpdateFrameStyle(self, style)
-    local RaidDebuffs = self.RaidDebuffs
-    local Name = self.Name
-
     if (self.FrameStyle ~= style) then
+        local RaidIcon = self.RaidTargetIndicator
+        local ReadyCheck = self.ReadyCheckIndicator
+        local RaidDebuffs = self.RaidDebuffs
+        local Name = self.Name
+
         if (style == "GRID") then
             RaidDebuffs:SetScript("OnShow", nil)
             RaidDebuffs:SetScript("OnHide", nil)
@@ -99,6 +101,12 @@ local function UpdateFrameStyle(self, style)
             Name:ClearAllPoints()
             Name:Point("BOTTOM", self, "CENTER", 0, 2)
             self.Health.Value:Show()
+
+            ReadyCheck:ClearAllPoints()
+            ReadyCheck:Point("CENTER")
+
+            RaidIcon:ClearAllPoints()
+            RaidIcon:Point("CENTER", self, "TOP")
         else
             RaidDebuffs:ClearAllPoints()
             RaidDebuffs:Point("LEFT", self, "RIGHT", FrameSpacing, 0)
@@ -108,7 +116,11 @@ local function UpdateFrameStyle(self, style)
             RaidDebuffs:SetHeight(size)
             self.Health.Value:Hide()
 
+            ReadyCheck:ClearAllPoints()
+            ReadyCheck:Point("RIGHT", self, "RIGHT", -4, 0)
 
+            RaidIcon:ClearAllPoints()
+            RaidIcon:Point("LEFT", self, "LEFT", 4, 0)
         end
         self.FrameStyle = style
     end

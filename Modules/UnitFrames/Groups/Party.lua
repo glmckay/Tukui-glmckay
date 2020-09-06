@@ -1,7 +1,5 @@
 local T, C, L = Tukui:unpack()
 
--- I hijack these to make dps/tank raid frames
-
 local UnitFrames = T.UnitFrames
 
 local ufFont = T.GetFont(C["Raid"].Font)
@@ -15,6 +13,23 @@ local GridDebuffSize = 33
 -- These are coincidentally identical to the largest List-style raid frames
 UnitFrames.PartyListWidth = 160
 UnitFrames.PartyListHeight = 36
+
+
+local FilterDebuffs = nil
+local DebuffBlacklist = C["Party"].DebuffBlacklist
+if next(DebuffBlacklist) ~= nil then
+    FilterDebuffs = function(self, unit, button, ...)
+        local Name, Id = select(1, ...), select(10, ...)
+        ListEntry = DebuffBlacklist[Id] or DebuffBlacklist[Name]
+        if (ListEntry) then
+            if (ListEntry.OtherPlayerOnly and unit ~= "player") then
+                return true
+            end
+            return false
+        end
+        return true
+    end
+end
 
 
 -- Protected stuff (basically the debuffs) needs to be handled separately.
@@ -52,19 +67,21 @@ end
 local function InitProtectedStyle(self, frameStyle)
     local Debuffs = self.Debuffs
     local Size
+
+    Debuffs:ClearAllPoints()
     if (frameStyle == "GRID") then
         Size = GridDebuffSize
-        Debuffs:Point("TOPLEFT", frame, "BOTTOMLEFT", 0, -FrameSpacing)
+        Debuffs:Point("TOPLEFT", self, "BOTTOMLEFT", 0, -FrameSpacing)
     else
         Size = UnitFrames.PartyListHeight
-        Debuffs:Point("TOPLEFT", frame, "TOPRIGHT", FrameSpacing, 0)
+        Debuffs:Point("TOPLEFT", self, "TOPRIGHT", FrameSpacing, 0)
     end
 
     Debuffs:Width(NumDebuffs * (Size + FrameSpacing))
     Debuffs:Height(Size)
 
     local frames = {Debuffs:GetChildren()}
-    for _,frame in ipairs(frames) do
+    for i,frame in ipairs(frames) do
         frame:Width(Size)
         frame:Height(Size)
     end
@@ -73,16 +90,25 @@ end
 
 local function OnRoleUpdate(self)
     local role = UnitGroupRolesAssigned(self.unit)
+    if (role == self.CurrentRole) then return end
 
-    if (role ~= self.CurrentRole) then
-        if (role == "HEALER" and self.FrameStyle ~= "GRID") then
-            self.Power:Show()
-        else
-            self.Power:Hide()
-        end
-        self.CurrentRole = role
+    if (role == "HEALER" and self.FrameStyle ~= "GRID") then
+        self.Power:Show()
+    else
+        self.Power:Hide()
     end
+    self.CurrentRole = role
 end
+
+
+local function OnPreUpdate(self)
+    OnRoleUpdate(self)
+
+    local parent = self:GetParent()
+    local frameStyle = parent:GetAttribute("framestyle") or "LIST"
+    self:UpdateStyle(frameStyle)
+end
+
 
 local function UpdateFrameWidth(self, w)
     local innerWidth = w - 2*T.Scale(BorderSize)
@@ -95,6 +121,8 @@ end
 
 local function UpdateFrameStyle(self, style)
     local Name = self.Name
+    local RaidIcon = self.RaidTargetIndicator
+    local ReadyCheck = self.ReadyCheckIndicator
 
     if (self.FrameStyle ~= style) then
         if (style == "GRID") then
@@ -104,6 +132,12 @@ local function UpdateFrameStyle(self, style)
             self.Debuffs.size = T.Scale(33)
             self.Health.Value:Show()
             self.Power:Hide()
+
+            ReadyCheck:ClearAllPoints()
+            ReadyCheck:Point("CENTER")
+
+            RaidIcon:ClearAllPoints()
+            RaidIcon:Point("CENTER", self, "TOP")
         else
             self.Name:ClearAllPoints()
             self.Name:Point("CENTER", self, "CENTER")
@@ -113,6 +147,12 @@ local function UpdateFrameStyle(self, style)
             if (self.CurrentRole == "HEALER") then
                 self.Power:Show()
             end
+
+            ReadyCheck:ClearAllPoints()
+            ReadyCheck:Point("RIGHT", self, "RIGHT", -4, 0)
+
+            RaidIcon:ClearAllPoints()
+            RaidIcon:Point("LEFT", self, "LEFT", 4, 0)
         end
         self.FrameStyle = style
     end
@@ -181,8 +221,9 @@ local function EditListRaidFrame(self)
     self.Buffs = nil
 
     local Debuffs = self.Debuffs
-    self.Debuffs.num = numDebuffs
+    self.Debuffs.num = NumDebuffs
     self.Debuffs.spacing = FrameSpacing
+    self.Debuffs.CustomFilter = FilterDebuffs
 
     UnitFrames:CreateAuraWatch(self)
 
@@ -194,8 +235,8 @@ local function EditListRaidFrame(self)
     ReadyCheck:ClearAllPoints()
     ReadyCheck:Point("CENTER", Health)
 
-    self.LeaderIndicator:Kill()
-    self.LeaderIndicator = nil
+    self.LeaderIndicator:ClearAllPoints()
+    self.LeaderIndicator:Point("TOPLEFT", self, "TOPLEFT", 2, -2)
 
     self.MasterLooterIndicator:Kill()
     self.MasterLooterIndicator = nil
@@ -209,13 +250,13 @@ local function EditListRaidFrame(self)
     SetProtectedStyleUpdates(self)
 
     self:RegisterEvent("GROUP_ROSTER_UPDATE", OnRoleUpdate)
-    OnRoleUpdate(self)
+    self.PreUpdate = OnPreUpdate
+    -- self:UpdateStyle(frameStyle)
+    -- OnPreUpdate(self)
 
     local parent = self:GetParent()
     local frameStyle = parent:GetAttribute("framestyle") or "LIST"
-    self:UpdateStyle(frameStyle)
     InitProtectedStyle(self, frameStyle)
-
     self:UpdateWidth(parent:GetAttribute("initial-width"))
 end
 

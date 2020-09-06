@@ -47,5 +47,7 @@ UnitFrames.EditClassFeatures["DEATHKNIGHT"] = function(self)
         end
         LastRune = Rune
     end
+
+    Runes.sortOrder = "asc"
 end
 

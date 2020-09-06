@@ -12,7 +12,7 @@ local function EditTimers(self)
             Status:SetStatusBarTexture(T.GetTexture(C["Textures"].General))
 
             Text:SetFont(C["Medias"].RegFont, 16, "OUTLINE")
-            Text:SetPoint("CENTER", Bar, "CENTER", 0, C["Medias"].FontOffset + 1)
+            Text:SetPoint("CENTER", Bar, "CENTER", 0, 0)
 
             Bar.IsEdited = true
         end

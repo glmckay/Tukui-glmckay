@@ -5,16 +5,8 @@ local barPlugin = nil
 local BorderSize = C.General.BorderSize
 local FrameSpacing = C.General.FrameSpacing
 
-local BarBackdrop = {
-    bgFile = C.Medias.Blank,
-    insets = { top =    -T.Scale(BorderSize),
-               left =   -T.Scale(BorderSize),
-               bottom = -T.Scale(BorderSize),
-               right =  -T.Scale(BorderSize) },
-}
 
 local function RemoveStyle(bar)
-    bar:SetHeight(14)
     bar.candyBarBackdrop:Hide()
 
     local tex = bar:Get("bigwigs:restoreicon")
@@ -29,8 +21,8 @@ local function RemoveStyle(bar)
     end
 
     bar.candyBarDuration:ClearAllPoints()
-    bar.candyBarDuration:SetPoint("TOPLEFT", bar.candyBarBar, "TOPLEFT", 2, 0)
-    bar.candyBarDuration:SetPoint("BOTTOMRIGHT", bar.candyBarBar, "BOTTOMRIGHT", -2, 0)
+    bar.candyBarDuration:SetPoint("TOPLEFT", bar.candyBarBar, "TOPLEFT", 2, -1)
+    bar.candyBarDuration:SetPoint("BOTTOMRIGHT", bar.candyBarBar, "BOTTOMRIGHT", -2, -1)
 
     bar.candyBarLabel:ClearAllPoints()
     bar.candyBarLabel:SetPoint("TOPLEFT", bar.candyBarBar, "TOPLEFT", 2, 0)
@@ -38,32 +30,31 @@ local function RemoveStyle(bar)
 end
 
 local function StyleBar(bar)
-    bar:Height(18)
 
-    local bd = bar.candyBarBackdrop
-
-    bd:SetBackdrop(BarBackdrop)
-    bd:SetBackdropColor(0, 0, 0)
-    bd:SetAllPoints()
-    bd:Show()
-
-    if barPlugin.db.profile.icon then
-        local icon = bar.candyBarIconFrame
-        local tex = icon.icon
-        bar:SetIcon(nil)
-        icon:SetTexture(tex)
-        icon:ClearAllPoints()
-        icon:SetPoint("RIGHT", bar, "LEFT", -5, 0)
-        icon:SetSize(bar:GetHeight(), bar:GetHeight())
-        bar:Set("bigwigs:restoreicon", tex)
-
-        local iconBd = bar.candyBarIconFrameBackdrop
-        iconBd:SetBackdrop(BarBackdrop)
-        iconBd:SetBackdropColor(.1, .1, .1, 1)
-        iconBd:SetBackdropBorderColor(0, 0, 0, 1)
-
-        iconBd:SetAllPoints(icon)
+    if bar:IsForbidden() then
+        return
     end
+
+    local Backdrop = bar.candyBarBackdrop
+    local Icon = bar.candyBarIconFrame
+
+    Backdrop:SetOutside(bar)
+    Backdrop:SetTemplate()
+    Backdrop:Show()
+
+    local Tex = Icon.icon
+    bar:SetIcon(nil)
+    Icon:SetTexture(Tex)
+    Icon:Show()
+    Icon:ClearAllPoints()
+    Icon:SetPoint("RIGHT", bar, "LEFT", -(FrameSpacing + 2*BorderSize), 0)
+    Icon:SetSize(bar:GetHeight(), bar:GetHeight())
+    bar:Set("bigwigs:restoreicon", Tex)
+
+    local IconBd = bar.candyBarIconFrameBackdrop
+    IconBd:SetTemplate()
+    IconBd:SetOutside(Icon)
+    IconBd:Show()
 end
 
 local f = CreateFrame("Frame")

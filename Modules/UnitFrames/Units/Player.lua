@@ -9,10 +9,10 @@ local UnitIsGhost = UnitIsGhost
 local UnitIsDead = UnitIsDead
 local ShortValue = TukuiUF.ShortValue
 
+TukuiUF.EditClassProfile = {}
 
 local BigNumberFont = T.GetFont(C["UnitFrames"].BigNumberFont)
 local NumberFont = T.GetFont(C["UnitFrames"].NumberFont)
-local FontOffset = C["Medias"].FontOffset
 
 local BorderSize = C.General.BorderSize
 local FrameSpacing = C.General.FrameSpacing
@@ -64,6 +64,7 @@ local function EditPlayer(self)
     -- Frame to overlay text above heal prediction
     local OverlayFrame = CreateFrame("Frame", nil, self)
     OverlayFrame:SetAllPoints()
+    OverlayFrame:SetFrameStrata(self:GetFrameStrata())
     OverlayFrame:SetFrameLevel(Health:GetFrameLevel() + 3)
     self.OverlayFrame = OverlayFrame
 
@@ -75,12 +76,14 @@ local function EditPlayer(self)
 
     Health.Background:Kill()
 
+    Health.Value:SetParent(OverlayFrame)
+    Health.Value:SetFontObject(NumberFont)
     Health.Value:ClearAllPoints()
-    Health.Value:Point("RIGHT", Health, "RIGHT", -2, FontOffset)
+    Health.Value:Point("RIGHT", Health, "RIGHT", -2, 0)
 
     Health.Percent = OverlayFrame:CreateFontString(nil, "OVERLAY")
     Health.Percent:SetFontObject(BigNumberFont)
-    Health.Percent:Point("LEFT", Health, "TOPLEFT", 2, FontOffset)
+    Health.Percent:Point("LEFT", Health, "TOPLEFT", 2, 0)
 
     Health.PostUpdate = TukuiUF.PlayerTargetPostUpdateHealth
 
@@ -92,7 +95,7 @@ local function EditPlayer(self)
     Power.Value:SetParent(OverlayFrame)
     Power.Value:SetFontObject(NumberFont)
     Power.Value:ClearAllPoints()
-    Power.Value:Point("BOTTOMLEFT", self, "BOTTOMLEFT", 2, FontOffset)
+    Power.Value:Point("BOTTOMLEFT", self, "BOTTOMLEFT", 2, 1)
     Power.PostUpdate = PlayerPostUpdatePower
 
     Power.Prediction:Width(FrameWidth - 2*BorderSize)
@@ -100,7 +103,7 @@ local function EditPlayer(self)
     -- Create a new string for the detached power bar (the usual string will stay on the frame when out of combat)
     Power.ExtraValue = Power:CreateFontString(nil, "OVERLAY")
     Power.ExtraValue:SetFontObject(BigNumberFont)
-    Power.ExtraValue:Point("CENTER", Power, "TOP", 0, FontOffset)
+    Power.ExtraValue:Point("CENTER", Power, "TOP", 0, 0)
 
     Power.Value:SetParent(OverlayFrame)
 
@@ -151,7 +154,7 @@ local function EditPlayer(self)
 
     CastBar.Time:SetFontObject(NumberFont)
     CastBar.Time:ClearAllPoints()
-    CastBar.Time:Point("RIGHT", CastBar, "RIGHT", -2, FontOffset)
+    CastBar.Time:Point("RIGHT", CastBar, "RIGHT", -2, 0)
 
     CastBar.Text:SetFontObject(NumberFont)
 
@@ -161,6 +164,7 @@ local function EditPlayer(self)
 
         for name,bar in pairs(HealthPrediction) do
             if (name ~= 'maxOverflow') then
+                bar:SetFrameLevel(Health:GetFrameLevel())
                 bar:Width(FrameWidth - 2*BorderSize)
             end
         end
@@ -206,8 +210,8 @@ function TukuiUF:SetPlayerProfile(role, isRanged)
 
         CastBar.Text:ClearAllPoints()
         CastBar.Text:SetHeight(CastBar:GetHeight())
-        CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, FontOffset)
-        CastBar.Text:SetWidth(TukuiColors - 80)
+        CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
+        CastBar.Text:SetWidth(CenterBarWidth - 80)
         CastBar.Text:SetJustifyH("LEFT")
 
         CastBar.Time:Show()
@@ -225,12 +229,16 @@ function TukuiUF:SetPlayerProfile(role, isRanged)
 
         CastBar.Text:ClearAllPoints()
         CastBar.Text:Height(10)
-        CastBar.Text:Point("RIGHT", CastBar, "RIGHT", -2, FontOffset)
-        CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, FontOffset)
-        CastBar.Text:Point("TOP", CastBar, "CENTER", 0, FontOffset)
+        CastBar.Text:Point("RIGHT", CastBar, "RIGHT", -2, 0)
+        CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
+        CastBar.Text:Point("TOP", CastBar, "CENTER", 0, 0)
         CastBar.Text:SetJustifyH("CENTER")
 
         CastBar.Time:Hide()
+    end
+
+    if (TukuiUF.EditClassProfile[T.MyClass]) then
+        TukuiUF.EditClassProfile[T.MyClass](Player, isRanged)
     end
 end
 

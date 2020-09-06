@@ -1,7 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
     <Script file="Colors.lua"/>
-	<Script file="Medias.lua"/>
+    <Script file="Medias.lua"/>
     <Script file="Api.lua"/>
-	<Script file="Commands.lua"/>
-	<Script file="Loading.lua"/>
+    <Script file="Commands.lua"/>
+    <Script file="Loading.lua"/>
 </Ui>

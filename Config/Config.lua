@@ -1,6 +1,6 @@
 local T, C, L = Tukui:unpack()
 
-C["General"]["BackdropColor"] = {0.11, 0.11, 0.11, 0.6}
+C["General"]["BackdropColor"] = {0.11, 0.11, 0.11, 0.8}
 C["General"]["BorderColor"] = {0, 0, 0}
 
 C["General"]["BorderSize"] = 1                      -- Added
@@ -15,7 +15,8 @@ C["ActionBars"]["ShapeShift"] = false
 C["ActionBars"]["HotKey"] = true
 C["ActionBars"]["HideBackdrop"] = true
 C["ActionBars"]["ButtonSpacing"] = 1
-C["ActionBars"]["HideGrid"] = true
+C["ActionBars"]["NumPlayerFrameButtons"] = 4
+C["ActionBars"]["HideGrid"] = false
 
 
 C["Auras"]["Fonts"] = "Small Bold"
@@ -25,7 +26,7 @@ C["Auras"]["Spacing"] = 3
 
 -- General options for the added AuraTimers module
 C["AuraTimers"] = {}
-C["AuraTimers"]["Enable"] = true
+C["AuraTimers"]["Enable"] = false
 C["AuraTimers"]["BorderSize"] = 2
 
 
@@ -54,8 +55,11 @@ C["Misc"]["NumExpBars"] = 1                     -- Added (should be 0 to 2)
 
 
 C["NamePlates"]["Font"] = "Small Bold"
+C["NamePlates"]["Width"] = 154
+C["NamePlates"]["Height"] = 16
 C["NamePlates"]["CastHeight"] = 7
-
+C["NamePlates"]["PlayerDebuffBlacklist"] = {}
+C["NamePlates"]["DebuffWhitelist"] = {}         -- Added
 
 C["Party"]["Enable"] = true
 C["Party"]["Highlight"] = false                 -- Added
@@ -63,6 +67,7 @@ C["Party"]["Font"] = "Small Thin"
 C["Party"]["HealthFont"] = "Small Bold"
 C["Party"]["ShowPlayer"] = true
 C["Party"]["ShowSolo"] = false                  -- Added (good for testing)
+C["Party"]["DebuffBlacklist"] = {}              -- Added
 
 
 C["Raid"]["Enable"] = true
@@ -92,3 +97,42 @@ for key,_ in pairs(C["Textures"]) do
     C["Textures"][key] = DefaultTex
 end
 C["Textures"]["General"] = DefaultTex
+
+-- Debuff Filters
+local HardCCs = {
+    6770,    -- Sap
+    2094,    -- Blind
+    115078,  -- Paralysis
+    20066,   -- Repentance
+    2637,    -- Hibernate
+    187650,  -- Freezing Trap
+    217832,  -- Imprison
+    710,     -- Banish
+    9484,    -- Shackle Undead
+    "Hex",
+    "Polymorph",
+}
+
+local LustDebuffs = {
+    57723,  -- Exhaustion
+    80354,  -- Temporal Displacement
+    95809,  -- Insanity (Ancient Hysteria Debuff)
+    160455, -- Fatigued (Netherwinds Debuff)
+    264689, -- Fatigued (Primal Rage Debuff)
+}
+
+local DungeonDebuffBlacklist = {
+    206151, -- Challenger's Burden
+    256200, -- Heartstopper Venom (Last Boss of Tol Dagor)
+}
+
+local DefaultEntry = {}
+for _,cc in ipairs(HardCCs) do
+    C["NamePlates"]["DebuffWhitelist"][cc] = DefaultEntry
+end
+for _,debuff in ipairs(LustDebuffs) do
+    C["Party"]["DebuffBlacklist"][debuff] = DefaultEntry
+end
+for _,debuff in ipairs(DungeonDebuffBlacklist) do
+    C["Party"]["DebuffBlacklist"][debuff] = DefaultEntry
+end

@@ -19,8 +19,6 @@
     <Script file="Miscellaneous\ReputationBar.lua"/>
     <Script file="Miscellaneous\VehicleIndicator.lua"/>
 
-    <Script file="NamePlates\Core.lua"/>
-
     <Script file="Panels\Core.lua"/>
 
     <Script file="Skins\BigWigs.lua"/>
@@ -28,6 +26,7 @@
     <Script file="Tooltip\Core.lua"/>
 
     <Script file="UnitFrames\Core.lua"/>
+    <Script file="UnitFrames\Tracking.lua"/>
     <Script file="UnitFrames\Units\Nameplates.lua"/>
     <Script file="UnitFrames\Units\Other.lua"/>
     <Script file="UnitFrames\Units\Pet_Tot.lua"/>

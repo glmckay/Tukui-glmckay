@@ -51,6 +51,7 @@ end
 
 local function SkinButton(Frame, Strip)
     Frame:TukuiSkinButton()
+    Frame:SetTemplate("Transparent")
 
     Frame:HookScript("OnEnter", function(self)
         local Color = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
@@ -88,7 +89,6 @@ EditAPI(Object:CreateTexture())
 EditAPI(Object:CreateFontString())
 
 Object = EnumerateFrames()
-
 while Object do
     if not Object:IsForbidden() and not Handled[Object:GetObjectType()] then
         EditAPI(Object)

@@ -66,14 +66,17 @@ end
 
 local function SetupConsumableBar()
     local Bar = Panels.ActionBar5
-    local Size = 36
+    local Size = 34
     local Spacing = C.ActionBars.ButtonSpacing
     local OffsetX = T.UnitFrames.PlayerTargetWidth / 2
-    local NumButtons = 2
+    local NumButtons = 4
 
-    Bar:Size(Size*NumButtons + Spacing * (NumButtons - 1), Size)
+    local totalWidth = Size*NumButtons + Spacing * (NumButtons - 1)
+    if (totalWidth % 2 == 0) then OffsetX = OffsetX + 0.5 end -- for pixel-perfectness
+
+    Bar:Size(totalWidth, Size)
     Bar:ClearAllPoints()
-    Bar:Point("TOP", Panels.UnitFrameAnchor, "BOTTOMLEFT", OffsetX, -FrameSpacing)
+    Bar:SetPoint("TOP", Panels.UnitFrameAnchor, "BOTTOMLEFT", OffsetX, -FrameSpacing)
 
     local PrevButton
     for i = 1,NUM_ACTIONBAR_BUTTONS do
@@ -130,21 +133,12 @@ end
 ActionBars.CreateToggleButtons = function() end
 ActionBars.LoadVariables = function() end
 
+-- For some reason the objective tracker gets bugged out if I kill this frame immediately,
+--  so we wait until it receives an event (probably PLAYER_ENTERING_WORLD) to kill it
 local function EditVehicleButtons()
     local VehicleLeft = T.Panels.VehicleButtonLeft
 
-    VehicleLeft:Kill()
-    -- local VehicleRight = T.Panels.VehicleButtonRight
-
-    -- VehicleLeft:ClearAllPoints()
-    -- VehicleLeft:Width(120)
-    -- VehicleLeft:Point("TOPLEFT", T.Panels.DataTextLeft, "TOPRIGHT", FrameSpacing, 0)
-    -- VehicleLeft:Point("TOPLEFT", T.Panels.DataTextLeft, "TOPRIGHT", FrameSpacing, 0)
-
-    -- VehicleRight:ClearAllPoints()
-    -- VehicleRight:Width(120)
-    -- VehicleRight:Point("TOPRIGHT", T.Panels.DataTextRight, "TOPLEFT", -FrameSpacing, 0)
-    -- VehicleRight:Point("TOPRIGHT", T.Panels.DataTextRight, "TOPLEFT", -FrameSpacing, 0)
+    VehicleLeft:SetScript("OnEvent", VehicleLeft.Kill)
 end
 
 
