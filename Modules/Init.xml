@@ -1,8 +1,11 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 
+
+    <Script file="Panels\Core.lua"/>
+
     <Script file="ActionBars\Core.lua"/>
 
-	<Script file="AuraTimers\Core.lua"/>
+	<!-- <Script file="AuraTimers\Core.lua"/> -->
 
     <Script file="Auras\Headers.lua"/>
 
@@ -10,23 +13,25 @@
 
     <Script file="DataTexts\Core.lua"/>
 
+    <Script file="Fonts\Core.lua"/>
+
     <Script file="Maps\Minimap.lua"/>
 
     <Script file="Miscellaneous\ExperienceBar.lua"/>
     <Script file="Miscellaneous\MirrorTimers.lua"/>
     <Script file="Miscellaneous\Miscellaneous.lua"/>
     <Script file="Miscellaneous\ObjectiveTracker.lua"/>
-    <Script file="Miscellaneous\ReputationBar.lua"/>
-    <Script file="Miscellaneous\VehicleIndicator.lua"/>
+    <!-- <Script file="Miscellaneous\ReputationBar.lua"/> -->
+    <!-- <Script file="Miscellaneous\VehicleIndicator.lua"/> -->
 
-    <Script file="Panels\Core.lua"/>
 
-    <Script file="Skins\BigWigs.lua"/>
+    <!-- <Script file="Skins\BigWigs.lua"/> -->
 
     <Script file="Tooltip\Core.lua"/>
 
     <Script file="UnitFrames\Core.lua"/>
     <Script file="UnitFrames\Tracking.lua"/>
+	<Script file="UnitFrames\Tags.lua"/>
     <Script file="UnitFrames\Units\Nameplates.lua"/>
     <Script file="UnitFrames\Units\Other.lua"/>
     <Script file="UnitFrames\Units\Pet_Tot.lua"/>
@@ -36,7 +41,8 @@
     <Script file="UnitFrames\Groups\Raid.lua"/>
     <Script file="UnitFrames\Classes\DeathKnight.lua"/>
     <Script file="UnitFrames\Classes\Monk.lua"/>
-    <Script file="UnitFrames\Classes\Priest.lua"/>
-    <Script file="UnitFrames\Classes\Shaman.lua"/>
-    <Script file="UnitFrames\Classes\Warlock.lua"/>
+    <Script file="UnitFrames\Classes\Paladin.lua"/>
+    <!-- <Script file="UnitFrames\Classes\Priest.lua"/> -->
+    <!-- <Script file="UnitFrames\Classes\Shaman.lua"/> -->
+    <!-- <Script file="UnitFrames\Classes\Warlock.lua"/> -->
 </Ui>

@@ -13,7 +13,7 @@ local function EditBars(self)
         local XPBar = self["XPBar"..i]
         local RestedBar = self["RestedBar"..i]
 
-        if (i <= 2 - NumBars) then
+        if (i > self.NumBars - NumBars) then
             XPBar:Kill()
             RestedBar:Kill()
         else
@@ -25,11 +25,11 @@ local function EditBars(self)
             RestedBar:SetOrientation("Horizontal")
             RestedBar:SetReverseFill(false)
 
-            local anchorFrame = (((i == 3 - NumBars) and Minimap) or self["XPBar"..i-1])
+            local anchorFrame = ((i == 1 and Minimap) or self["XPBar"..i-1])
             XPBar:ClearAllPoints()
-            XPBar:Point("TOPLEFT", anchorFrame, "BOTTOMLEFT", 0, -(BorderSize*2 + FrameSpacing))
-            XPBar:Point("TOPRIGHT", anchorFrame, "BOTTOMRIGHT", 0, -(BorderSize*2 + FrameSpacing))
-            XPBar:Height(self.BarHeight)
+            XPBar:SetPoint("TOPLEFT", anchorFrame, "BOTTOMLEFT", 0, -(BorderSize*2 + FrameSpacing))
+            XPBar:SetPoint("TOPRIGHT", anchorFrame, "BOTTOMRIGHT", 0, -(BorderSize*2 + FrameSpacing))
+            XPBar:SetHeight(self.BarHeight)
         end
     end
 end

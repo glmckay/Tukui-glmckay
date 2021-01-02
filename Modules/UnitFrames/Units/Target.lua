@@ -34,34 +34,35 @@ end
 local function UpdateBars(self)
     local NumPowerBars = 0
     if (self.Power.BarShown) then NumPowerBars = 1 end
-    if (self.AlternativePower.BarShown) then NumPowerBars = NumPowerBars + 1 end
+    -- if (self.AlternativePower.BarShown) then NumPowerBars = NumPowerBars + 1 end
 
-    self.Health:Height(FrameHeight - 2*BorderSize - NumPowerBars*(TukuiUF.PowerHeight + BorderSize))
+    self.Health:SetHeight(FrameHeight - 2*BorderSize - NumPowerBars*(TukuiUF.PowerHeight + BorderSize))
 end
 
 
-local function PostUpdatePower(self, unit, min, max)
+local function PostUpdatePower(self, unit, cur, min, max)
     local pType, pToken = UnitPowerType(unit)
     local IsPlayer = UnitIsPlayer(unit)
     local Class = UnitClass(unit)
     -- if ((pType == 0 and IsPlayer and not (Class == "Warlock" or Class == "Mage")) or
-    if ((pType == 0 and IsPlayer) or
-        (pType ~= 0 and not IsPlayer and min > 0)) then
+    if ((pType == 0) or (not IsPlayer and cur > 0)) then
         if (self.BarShown ~= true) then
-            -- self:GetParent().Health:Height(FrameHeight - TukuiUF.PowerHeight - 3*BorderSize)
             self:SetAlpha(1)
             self.BarShown = true
             UpdateBars(self:GetParent())
         end
 
-        if ((pType == 0 or min == 0) or not UnitIsConnected(unit) or UnitIsDead(unit) or UnitIsGhost(unit)) then
+        if ((pType == 0 or cur == 0) or
+            not UnitIsConnected(unit) or
+            UnitIsDead(unit) or
+            UnitIsGhost(unit)) then
             self.Value:SetText()
         else
-            self.Value:SetText(min)
+            self.Value:SetText(cur)
         end
     else
         if (self.BarShown ~= false) then
-            -- self:GetParent().Health:Height(FrameHeight - 2*BorderSize)
+            -- self:GetParent().Health:SetHeight(FrameHeight - 2*BorderSize)
             self:SetAlpha(0)
             self.BarShown = false
             self.Value:SetText()
@@ -71,7 +72,7 @@ local function PostUpdatePower(self, unit, min, max)
 end
 
 
-local function PostUpdateAltPower(self, min, cur, max)
+local function PostUpdateAltPower(self, unit, cur, min, max)
     if (not cur) or (not max) then return end
 
     if (min ~= cur) then
@@ -91,8 +92,6 @@ end
 
 
 local function EditTarget(self)
-    self.Panel:Kill()
-    self:SetTemplate()
 
     local Health = self.Health
     local Power = self.Power
@@ -108,9 +107,9 @@ local function EditTarget(self)
 
     -- Health
     Health:ClearAllPoints()
-    Health:Point("TOPLEFT", self, BorderSize, -BorderSize)
-    Health:Point("TOPRIGHT", self, -BorderSize, -BorderSize)
-    Health:Height(FrameHeight - 2*BorderSize)
+    Health:SetPoint("TOPLEFT", self, BorderSize, -BorderSize)
+    Health:SetPoint("TOPRIGHT", self, -BorderSize, -BorderSize)
+    Health:SetHeight(FrameHeight - 2*BorderSize)
 
     Health.Background:Kill()
     Health.bg = nil
@@ -118,67 +117,63 @@ local function EditTarget(self)
     Health.Value:SetParent(OverlayFrame)
     Health.Value:SetFontObject(NumberFont)
     Health.Value:ClearAllPoints()
-    Health.Value:Point("LEFT", Health, "LEFT", 2, 0)
+    Health.Value:SetPoint("LEFT", Health, "LEFT", 2, 0)
 
     Health.Percent = OverlayFrame:CreateFontString(nil, "OVERLAY")
     Health.Percent:SetFontObject(BigNumberFont)
-    Health.Percent:Point("RIGHT", Health, "TOPRIGHT", -2, 0)
+    Health.Percent:SetPoint("RIGHT", Health, "TOPRIGHT", -2, 0)
 
     Health.PostUpdate = TukuiUF.PlayerTargetPostUpdateHealth
 
     -- Power
     Power:ClearAllPoints()
-    Power:Height(TukuiUF.PowerHeight)
-    Power:Point("BOTTOMLEFT", self, BorderSize, BorderSize)
-    Power:Point("BOTTOMRIGHT", self, -BorderSize, BorderSize)
+    Power:SetHeight(TukuiUF.PowerHeight)
+    Power:SetPoint("BOTTOMLEFT", self, BorderSize, BorderSize)
+    Power:SetPoint("BOTTOMRIGHT", self, -BorderSize, BorderSize)
     Power:SetFrameLevel(Health:GetFrameLevel() + 2)
 
-    Power.Background:Kill()
-    Power.bg = nil
-
-    Power.Value:SetParent(OverlayFrame)
+    Power.Value = OverlayFrame:CreateFontString(nil, "OVERLAY")
     Power.Value:SetFontObject(NumberFont)
-    Power.Value:ClearAllPoints()
-    Power.Value:Point("BOTTOMRIGHT", self, "BOTTOMRIGHT", -2, 1)
-
+    Power.Value:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", -2, 1)
     Power.PostUpdate = PostUpdatePower
 
     -- Alt Power Bar
-    AltPower:ClearAllPoints()
-    AltPower:Height(TukuiUF.PowerHeight)
-    AltPower:Point("TOPLEFT", Health, "BOTTOMLEFT", 0, -BorderSize)
-    AltPower:Point("TOPRIGHT", Health, "BOTTOMRIGHT", 0, -BorderSize)
+    -- AltPower:ClearAllPoints()
+    -- AltPower:SetHeight(TukuiUF.PowerHeight)
+    -- AltPower:SetPoint("TOPLEFT", Health, "BOTTOMLEFT", 0, -BorderSize)
+    -- AltPower:SetPoint("TOPRIGHT", Health, "BOTTOMRIGHT", 0, -BorderSize)
 
-    AltPower.PostUpdate = PostUpdateAltPower
+    -- AltPower.PostUpdate = PostUpdateAltPower
 
     -- Castbar
-    CastBar:SetBackdrop({})
+    CastBar:SetParent(UIParent)
     CastBar:CreateBackdrop()
+    CastBar.Backdrop:SetOutside()
     CastBar.Background:Kill()
     CastBar.bg = nil
 
-    CastBar:Size(CenterBarWidth, CastBarHeight)
+    CastBar:SetSize(CenterBarWidth + (CenterBarWidth % 2), CastBarHeight)
     CastBar:ClearAllPoints()
     if (C.UnitFrames.UnlinkCastBar) then
-        CastBar:Point("BOTTOM", UIParent, "CENTER", 0, 340)
+        CastBar:SetPoint("BOTTOM", UIParent, "CENTER", 0, 340)
     else
-        CastBar:Point("TOP", self, "BOTTOM", 0, -FrameSpacing)
+        CastBar:SetPoint("TOP", self, "BOTTOM", 0, -FrameSpacing)
     end
 
     CastBar.Time:SetFontObject(NumberFont)
     CastBar.Time:ClearAllPoints()
-    CastBar.Time:Point("RIGHT", CastBar, "RIGHT", -2, 0)
+    CastBar.Time:SetPoint("RIGHT", CastBar, "RIGHT", -2, 0)
 
     CastBar.Text:SetFontObject(NumberFont)
     CastBar.Text:ClearAllPoints()
-    CastBar.Text:SetWidth(T.Scale(FrameWidth - 80))
+    CastBar.Text:SetWidth(FrameWidth - 80)
     CastBar.Text:SetHeight(CastBar:GetHeight())
-    CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
+    CastBar.Text:SetPoint("LEFT", CastBar, "LEFT", 2, 0)
 
     if C.UnitFrames.CastBarIcon then
         CastBar.Icon:ClearAllPoints()
-        CastBar.Icon:Size(36)
-        CastBar.Icon:Point("BOTTOM", CastBar, "TOP", 0, 10)
+        CastBar.Icon:SetSize(36, 36)
+        CastBar.Icon:SetPoint("BOTTOM", CastBar, "TOP", 0, 10)
     end
 
     if (C.UnitFrames.HealBar) then
@@ -186,15 +181,15 @@ local function EditTarget(self)
 
         for name,bar in pairs(HealthPrediction) do
             if (name ~= 'maxOverflow') then
-                bar:Width(FrameWidth - 2*BorderSize)
+                bar:SetWidth(FrameWidth - 2*BorderSize)
             end
         end
     end
 
     -- Create new Name since we killed the panel
     local Name = OverlayFrame:CreateFontString(nil, "OVERLAY")
-    Name:Point("BOTTOMLEFT", Health, "TOPLEFT", -2, 0)
-    Name:SetJustifyH("LEFT")
+    Name:SetPoint("BOTTOMRIGHT", Health, "TOPRIGHT", -2, 0)
+    Name:SetJustifyH("RIGHT")
     Name:SetFontObject(NameFont)
 
     if (C.UnitFrames.DarkTheme) then
@@ -205,28 +200,31 @@ local function EditTarget(self)
     self.Name = Name
 
     -- Auras
-    if (C.UnitFrames.TargetAuras) then
+    if (C.UnitFrames.TargetBuffs) then
         local Buffs = self.Buffs
         local Debuffs = self.Debuffs
 
-        Buffs:Point("BOTTOMLEFT", self, "TOPLEFT", 0, 15)
+        Buffs:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, 15)
         Buffs:SetFrameLevel(self:GetFrameLevel())
-        Buffs:Height(TukuiUF.TargetAuraSize)
-        Buffs:Width(FrameWidth)
-        Buffs.size = T.Scale(TukuiUF.TargetAuraSize)
+        Buffs:SetHeight(TukuiUF.TargetAuraSize)
+        Buffs:SetWidth(FrameWidth)
+        Buffs.size = TukuiUF.TargetAuraSize
         Buffs.num = NumAuras
         Buffs.numRow = TukuiUF.TargetAurasPerRow
-        Buffs.spacing = T.Scale(FrameSpacing)
+        Buffs.spacing = FrameSpacing
+    end
 
+    if (C.UnitFrames.TargetDebuffs) then
+        local Debuffs = self.Debuffs
 
-        Debuffs:Point("BOTTOMLEFT", buffs, "TOPLEFT", 0, 1) -- until  UpdateDebuffsHeaderPosition changes it
+        Debuffs:SetPoint("BOTTOMLEFT", buffs, "TOPLEFT", 0, 1) -- until  UpdateDebuffsHeaderPosition changes it
         Debuffs:SetFrameLevel(self:GetFrameLevel())
-        Debuffs:Height(TukuiUF.TargetAuraSize)
-        Debuffs:Width(FrameWidth)
-        Debuffs.size = T.Scale(TukuiUF.TargetAuraSize)
+        Debuffs:SetHeight(TukuiUF.TargetAuraSize)
+        Debuffs:SetWidth(FrameWidth)
+        Debuffs.size = TukuiUF.TargetAuraSize
         Debuffs.num = NumAuras
         Debuffs.numRow = TukuiUF.TargetAurasPerRow
-        Debuffs.Spacing = T.Scale(FrameSpacing)
+        Debuffs.Spacing = FrameSpacing
 
         -- Toggle debuff filtering based on unit
         self.PreUpdate = function(self)

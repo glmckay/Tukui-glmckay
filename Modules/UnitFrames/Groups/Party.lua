@@ -7,12 +7,11 @@ local BorderSize = C["General"].BorderSize
 local FrameSpacing = C["General"].FrameSpacing
 
 local powerHeight = 2
-local NumDebuffs = 3
+local NumDebuffs = 4
 local GridDebuffSize = 33
 
--- These are coincidentally identical to the largest List-style raid frames
-UnitFrames.PartyListWidth = 160
-UnitFrames.PartyListHeight = 36
+UnitFrames.PartyListWidth = 170
+UnitFrames.PartyListHeight = 32
 
 
 local FilterDebuffs = nil
@@ -43,7 +42,7 @@ local function SetProtectedStyleUpdates(self)
         local numDebuffs = %d
         local size
 
-        if (message == "GRID") then
+        if (message == "GRID" and false) then
             size = %d
             debuffs:ClearAllPoints()
             debuffs:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 0, -spacing)
@@ -60,7 +59,7 @@ local function SetProtectedStyleUpdates(self)
             frame:SetWidth(size)
             frame:SetHeight(size)
         end
-    ]], T.Scale(FrameSpacing), NumDebuffs, T.Scale(GridDebuffSize), T.Scale(UnitFrames.PartyListHeight)))
+    ]], FrameSpacing, NumDebuffs, GridDebuffSize, UnitFrames.PartyListHeight))
 end
 
 
@@ -69,21 +68,21 @@ local function InitProtectedStyle(self, frameStyle)
     local Size
 
     Debuffs:ClearAllPoints()
-    if (frameStyle == "GRID") then
+    if (frameStyle == "GRID" and false) then
         Size = GridDebuffSize
-        Debuffs:Point("TOPLEFT", self, "BOTTOMLEFT", 0, -FrameSpacing)
+        Debuffs:SetPoint("TOPLEFT", self, "BOTTOMLEFT", 0, -FrameSpacing)
     else
         Size = UnitFrames.PartyListHeight
-        Debuffs:Point("TOPLEFT", self, "TOPRIGHT", FrameSpacing, 0)
+        Debuffs:SetPoint("TOPLEFT", self, "TOPRIGHT", FrameSpacing, 0)
     end
 
-    Debuffs:Width(NumDebuffs * (Size + FrameSpacing))
-    Debuffs:Height(Size)
+    Debuffs:SetWidth(NumDebuffs * (Size + FrameSpacing))
+    Debuffs:SetHeight(Size)
 
     local frames = {Debuffs:GetChildren()}
     for i,frame in ipairs(frames) do
-        frame:Width(Size)
-        frame:Height(Size)
+        frame:SetWidth(Size)
+        frame:SetHeight(Size)
     end
 end
 
@@ -111,9 +110,8 @@ end
 
 
 local function UpdateFrameWidth(self, w)
-    local innerWidth = w - 2*T.Scale(BorderSize)
+    local innerWidth = w - 2*BorderSize
     local HealthPrediction = self.HealthPrediction
-    HealthPrediction.absorbBar:SetWidth(innerWidth)
     HealthPrediction.myBar:SetWidth(innerWidth)
     HealthPrediction.otherBar:SetWidth(innerWidth)
 end
@@ -127,34 +125,43 @@ local function UpdateFrameStyle(self, style)
     if (self.FrameStyle ~= style) then
         if (style == "GRID") then
             self.Name:ClearAllPoints()
-            self.Name:Point("BOTTOM", self, "CENTER", 0, 2)
+            self.Name:SetPoint("BOTTOM", self, "CENTER", 0, 2)
 
-            self.Debuffs.size = T.Scale(33)
+            self.Debuffs.size = GridDebuffSize
             self.Health.Value:Show()
             self.Power:Hide()
 
             ReadyCheck:ClearAllPoints()
-            ReadyCheck:Point("CENTER")
+            ReadyCheck:SetPoint("CENTER")
 
             RaidIcon:ClearAllPoints()
-            RaidIcon:Point("CENTER", self, "TOP")
+            RaidIcon:SetPoint("CENTER", self, "TOP")
         else
             self.Name:ClearAllPoints()
-            self.Name:Point("CENTER", self, "CENTER")
+            self.Name:SetPoint("CENTER", self, "CENTER")
 
-            self.Debuffs.size = T.Scale(36)
+            self.Debuffs.size = UnitFrames.PartyListHeight
             self.Health.Value:Hide()
             if (self.CurrentRole == "HEALER") then
                 self.Power:Show()
             end
 
             ReadyCheck:ClearAllPoints()
-            ReadyCheck:Point("RIGHT", self, "RIGHT", -4, 0)
+            ReadyCheck:SetPoint("RIGHT", self, "RIGHT", -20, 0)
 
             RaidIcon:ClearAllPoints()
-            RaidIcon:Point("LEFT", self, "LEFT", 4, 0)
+            RaidIcon:SetPoint("RIGHT", self, "RIGHT", -4, 0)
         end
         self.FrameStyle = style
+    end
+end
+
+local function PostUpdatePower(self, unit, cur, min, max)
+    local pType, pToken = UnitPowerType(unit)
+    local isMana = pType == 0
+    if (isMana ~= self.BarShown) then
+        self:SetAlpha(isMana and 1 or 0)
+        self.BarShown = isMana
     end
 end
 
@@ -166,13 +173,14 @@ local function EditListRaidFrame(self)
     local RaidIcon = self.RaidTargetIndicator
     local ReadyCheck = self.ReadyCheckIndicator
 
-    self:SetTemplate()
-    self:SetBackdropColor(0, 0, 0)
-
     -- Frame to overlay text above heal prediction
     local OverlayFrame = CreateFrame("Frame", nil, self)
     OverlayFrame:SetAllPoints()
     OverlayFrame:SetFrameLevel(Health:GetFrameLevel() + 3)
+
+    local GroupIconFrame = CreateFrame("Frame", nil, OverlayFrame)
+    GroupIconFrame:SetAllPoints()
+    RegisterStateDriver(GroupIconFrame, "visibility", "[mod:alt]show;hide")
 
     Health:ClearAllPoints()
     Health:SetInside()
@@ -180,15 +188,15 @@ local function EditListRaidFrame(self)
 
     Health.Value:SetParent(OverlayFrame)
     Health.Value:ClearAllPoints()
-    Health.Value:Point("TOP", self, "CENTER", 0, -2)
+    Health.Value:SetPoint("TOP", self, "CENTER", 0, -2)
 
     Power:SetFrameLevel(5)
     Power:ClearAllPoints()
-    Power:Point("BOTTOMLEFT", self, BorderSize, BorderSize)
-    Power:Point("BOTTOMRIGHT", self, -BorderSize, BorderSize)
-    Power:Height(powerHeight)
+    Power:SetPoint("BOTTOMLEFT", self, BorderSize, BorderSize)
+    Power:SetPoint("BOTTOMRIGHT", self, -BorderSize, BorderSize)
+    Power:SetHeight(powerHeight)
     Power:CreateBackdrop()
-    Power:Hide()
+    Power.PostUpdate = PostUpdatePower
 
     Name:SetParent(OverlayFrame)
     if (C.UnitFrames.DarkTheme) then
@@ -225,21 +233,39 @@ local function EditListRaidFrame(self)
     self.Debuffs.spacing = FrameSpacing
     self.Debuffs.CustomFilter = FilterDebuffs
 
-    UnitFrames:CreateAuraWatch(self)
-
     RaidIcon:SetParent(OverlayFrame)
     RaidIcon:ClearAllPoints()
-    RaidIcon:Point("TOP", self, "TOP", 0, 2)
+    RaidIcon:SetPoint("TOP", self, "TOP", 0, 2)
 
     ReadyCheck:SetParent(OverlayFrame)
     ReadyCheck:ClearAllPoints()
-    ReadyCheck:Point("CENTER", Health)
+    ReadyCheck:SetPoint("CENTER", Health)
 
     self.LeaderIndicator:ClearAllPoints()
-    self.LeaderIndicator:Point("TOPLEFT", self, "TOPLEFT", 2, -2)
+    self.LeaderIndicator:SetPoint("TOPLEFT", self, "TOPLEFT", 3, 0)
+    self.LeaderIndicator:SetParent(GroupIconFrame)
 
     self.MasterLooterIndicator:Kill()
     self.MasterLooterIndicator = nil
+
+    local GroupRoleIndicator = GroupIconFrame:CreateTexture(nil, 'OVERLAY')
+    GroupRoleIndicator:SetSize(16, 16)
+    GroupRoleIndicator:SetPoint("BOTTOMLEFT", 2, 2)
+    GroupRoleIndicator:SetParent(GroupIconFrame)
+    GroupRoleIndicator.Override = UnitFrames.GroupRoleIndicatorUpdate
+    self.GroupRoleIndicator = GroupRoleIndicator
+
+    if C.Party.AuraTrack then
+		local AuraTrack = CreateFrame("Frame", nil, Health)
+		AuraTrack:SetAllPoints()
+		AuraTrack.Texture = C.Medias.Normal
+		AuraTrack.Icons = C.Raid.AuraTrackIcons
+		AuraTrack.Thickness = C.Raid.AuraTrackThickness
+		AuraTrack.IconSize = C.Raid.AuraTrackIconSize
+		AuraTrack.Spacing = C.Raid.AuraTrackSpacing
+
+        self.AuraTrack = AuraTrack
+    end
 
     self.OverlayFrame = OverlayFrame
     self.Name = Name
@@ -249,15 +275,16 @@ local function EditListRaidFrame(self)
 
     SetProtectedStyleUpdates(self)
 
-    self:RegisterEvent("GROUP_ROSTER_UPDATE", OnRoleUpdate)
-    self.PreUpdate = OnPreUpdate
+    -- self:RegisterEvent("GROUP_ROSTER_UPDATE", OnRoleUpdate)
+    -- self.PreUpdate = OnPreUpdate
     -- self:UpdateStyle(frameStyle)
-    -- OnPreUpdate(self)
+    OnPreUpdate(self)
 
     local parent = self:GetParent()
     local frameStyle = parent:GetAttribute("framestyle") or "LIST"
     InitProtectedStyle(self, frameStyle)
     self:UpdateWidth(parent:GetAttribute("initial-width"))
+
 end
 
 hooksecurefunc(UnitFrames, "Party", EditListRaidFrame)

@@ -1,6 +1,6 @@
 local T, C, L = Tukui:unpack()
 
-local TukuiChat = T["Chat"]
+local Chat = T["Chat"]
 
 local ChatFrameHeight = 190
 local DefaultChatFontSize = 14
@@ -32,32 +32,25 @@ function FCFDock_UpdateTabs(dock, forceUpdate)
     end
 end
 
+local function EditPanels(self)
 
-local function EditFrameStyle(self, frame)
-    if frame.IsSkinEdited then
-        return
-    end
-
-    local ID = frame:GetID()
-    local FrameName = frame:GetName()
-    local EditBox = _G[FrameName.."EditBox"]
-
-    -- Reset the backdrop since Tukui forces backdrop color/alpha
-    EditBox.Backdrop:SetTemplate()
-
-    frame.IsSkinEdited = true
-end
-
-
-local function EditDefaultPositions()
-    for i = 1,NUM_CHAT_WINDOWS do
-        local Frame = _G["ChatFrame"..i]
-        Frame:Height(ChatFrameHeight)
-
-        local Settings = TukuiData[GetRealmName()][UnitName("Player")].Chat["Frame" .. i]
-        Settings[6] = ChatFrameHeight
+    for _, Panel in pairs(self.Panels) do
+        T.Toolkit.Functions.HideBackdrop(Panel)
     end
 end
+
+
+function Chat:AddToggles() end
+
+-- local function EditDefaultPositions()
+--     for i = 1,NUM_CHAT_WINDOWS do
+--         local Frame = _G["ChatFrame"..i]
+--         Frame:SetHeight(ChatFrameHeight)
+
+--         local Settings = TukuiData[GetRealmName()][UnitName("Player")].Chat["Frame" .. i]
+--         Settings[6] = ChatFrameHeight
+--     end
+-- end
 
 local function NoMouseAlphaOnTab()
     local Frame = self:GetName()
@@ -95,8 +88,8 @@ local function SetupEdit()
 end
 
 
-hooksecurefunc(TukuiChat, "StyleFrame", EditFrameStyle)
-hooksecurefunc(TukuiChat, "SetDefaultChatFramesPositions", EditDefaultPositions)
-hooksecurefunc(TukuiChat, "Setup", SetupEdit)
-hooksecurefunc(TukuiChat, "Install", EditInstall)
+hooksecurefunc(Chat, "AddPanels", EditPanels)
+-- hooksecurefunc(Chat, "SaveChatFramePositionAndDimensions", EditDefaultPositions)
+hooksecurefunc(Chat, "Setup", SetupEdit)
+hooksecurefunc(Chat, "Reset", EditInstall)
 

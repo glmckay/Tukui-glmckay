@@ -8,7 +8,7 @@ local FrameSpacing = C["General"].FrameSpacing
 
 local function EditAnchor(self)
     self.Anchor:ClearAllPoints()
-    self.Anchor:Point("BOTTOMRIGHT", T["Panels"].DataTextRight, 0, 190)
+    self.Anchor:SetPoint("BOTTOMRIGHT", T.DataTexts.Panels.Right, 0, 190)
 end
 
 -- The only way I could come up with to stop Tuki coloring the borders of the toolip
@@ -59,10 +59,12 @@ end
 
 local function EnableEdits(self)
     HealthBar:ClearAllPoints()
-    HealthBar:Point("BOTTOMLEFT", HealthBar:GetParent(), "TOPLEFT", BorderSize, BorderSize + FrameSpacing)
-    HealthBar:Point("BOTTOMRIGHT", HealthBar:GetParent(), "TOPRIGHT", -BorderSize, BorderSize + FrameSpacing)
+    HealthBar:SetPoint("BOTTOMLEFT", HealthBar:GetParent(), "TOPLEFT", BorderSize, BorderSize + FrameSpacing)
+    HealthBar:SetPoint("BOTTOMRIGHT", HealthBar:GetParent(), "TOPRIGHT", -BorderSize, BorderSize + FrameSpacing)
 
-    HealthBar.Text:Point("CENTER", HealthBar, "CENTER", 0, 7)
+    HealthBar.Text:SetPoint("CENTER", HealthBar, "CENTER", 0, 7)
+
+    HealthBar:CreateBackdrop()
 end
 
 

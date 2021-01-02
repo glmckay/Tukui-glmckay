@@ -19,24 +19,24 @@ UnitFrames.EditClassFeatures["WARLOCK"] = function(self)
     Bar:SetBackdropColor(0, 0, 0)
 
     Bar:ClearAllPoints()
-    Bar:Size(FrameWidth, FrameHeight)
+    Bar:SetSize(FrameWidth, FrameHeight)
 
     if (C.UnitFrames.UnlinkPower) then
-        Bar:Point("BOTTOMLEFT", self, "TOPLEFT", 0, BorderSize)
+        Bar:SetPoint("BOTTOMLEFT", self, "TOPLEFT", 0, BorderSize)
     else
         Bar:SetParent(self.PowerDisplayAnchor)
-        Bar:Point("TOP", self.PowerDisplayAnchor)
+        Bar:SetPoint("TOP", self.PowerDisplayAnchor)
     end
 
     for i = 1,5 do
         if (i == 3) then
-            Bar[i]:Size(FrameWidth - 4*(ShardWidth + BorderSize), FrameHeight)
+            Bar[i]:SetSize(FrameWidth - 4*(ShardWidth + BorderSize, FrameWidth - 4*(ShardWidth + BorderSize), FrameHeight)
         else
-            Bar[i]:Size(ShardWidth, FrameHeight)
+            Bar[i]:SetSize(ShardWidth, FrameHeight)
         end
 
         if (i ~= 1) then
-            Bar[i]:Point("LEFT", Bar[i-1], "RIGHT", BorderSize, 0)
+            Bar[i]:SetPoint("LEFT", Bar[i-1], "RIGHT", BorderSize, 0)
         end
     end
 end

@@ -127,18 +127,18 @@ local function UpdateMaxBrewCharges(self, maxCharges)
     local i = 1
     local j = maxCharges
     while (j > i + 1) do
-        self[i]:Width(BarWidth)
-        self[j]:Width(BarWidth)
+        self[i]:SetWidth(BarWidth)
+        self[j]:SetWidth(BarWidth)
         i = i + 1
         j = j - 1
     end
 
     if (i == j) then
-        self[i]:Width(TotalWidth - (maxCharges-1)*BarWidth)
+        self[i]:SetWidth(TotalWidth - (maxCharges-1)*BarWidth)
     else -- j == i+1
         local MidBarWidth = (TotalWidth - (maxCharges - 2)*BarWidth) / 2
-        self[i]:Width(math.floor(MidBarWidth))
-        self[j]:Width(math.ceil(MidBarWidth))
+        self[i]:SetWidth(math.floor(MidBarWidth))
+        self[j]:SetWidth(math.ceil(MidBarWidth))
     end
 
     for i = 1,MAX_POSSIBLE_BREWS do
@@ -199,20 +199,20 @@ end
 
 local function CreateBrewDisplay(self)
     local BrewFrame = CreateFrame("Frame", self:GetName().."BrewFrame", self.Power)
-    BrewFrame:Size(Panels.CenterPanelWidth, 8)
-    BrewFrame:Point("BOTTOM", self.Stagger, "TOP", 0, FrameSpacing + BorderSize)
+    BrewFrame:SetSize(Panels.CenterPanelWidth, 8)
+    BrewFrame:SetPoint("BOTTOM", self.Stagger, "TOP", 0, FrameSpacing + BorderSize)
     BrewFrame:SetFrameLevel(2)
 
     for i = 1,MAX_POSSIBLE_BREWS do
         local Bar = CreateFrame("Frame", self:GetName().."BrewFrameBar"..i, BrewFrame)
         Bar:SetFrameLevel(0)
         if (i == 1) then
-            Bar:Point("LEFT", BrewFrame, "LEFT")
+            Bar:SetPoint("LEFT", BrewFrame, "LEFT")
         else
-            Bar:Point("LEFT", BrewFrame[i-1], "RIGHT", FrameSpacing, 0)
+            Bar:SetPoint("LEFT", BrewFrame[i-1], "RIGHT", FrameSpacing, 0)
         end
-        Bar:SetTemplate()
-        Bar:Height(8)
+        -- Bar:SetTemplate()
+        Bar:SetHeight(8)
 
         Bar.StatusBar = CreateFrame("StatusBar", nil, Bar)
         Bar.StatusBar:SetFrameLevel(1)
@@ -225,7 +225,7 @@ local function CreateBrewDisplay(self)
 
     BrewFrame.Remaining = BrewFrame:CreateFontString(self:GetName().."BrewFrameTime", "BORDER")
     BrewFrame.Remaining:SetFontObject(T.GetFont(C["UnitFrames"].BigNumberFont))
-    BrewFrame.Remaining:Point("CENTER", BrewFrame, "CENTER")
+    BrewFrame.Remaining:SetPoint("CENTER", BrewFrame, "CENTER")
 
     BrewFrame.TimeLeft = 100 -- To force an initial update
     BrewFrame.Remaining:SetText("100")
@@ -252,18 +252,19 @@ local function EditChiDisplay(self)
     local Harmony = self.HarmonyBar
     local TotalWidth = Panels.CenterPanelWidth - 2*BorderSize
 
-    Harmony:SetBackdrop({})
+    Harmony.Backdrop:Kill()
+    Harmony.Backdrop = nil
 
     Harmony:SetParent(Power)
     Harmony:SetFrameLevel(0)
     Harmony:ClearAllPoints()
-    Harmony:Size(TotalWidth, NormalBarHeight)
-    Harmony:Point("TOP", Panels.UnitFrameAnchor, 0, -BorderSize)
+    Harmony:SetSize(TotalWidth, NormalBarHeight)
+    Harmony:SetPoint("TOP", Panels.UnitFrameAnchor, 0, -BorderSize)
 
     -- The Chi colour is hardcoded, so we have to resort to the old "I changed it and threw away the function"
     local c = T["Colors"]["power"]["CHI"]
     for _,bar in ipairs(Harmony) do
-        bar:Height(NormalBarHeight)
+        bar:SetHeight(NormalBarHeight)
         bar:SetStatusBarColor(unpack(c))
         bar.SetStatusBarColor = function() end
     end
@@ -289,8 +290,9 @@ local function EditChiDisplay(self)
         end
 
         Bar:CreateBackdrop()
+        Bar.Backdrop:SetOutside()
         if (LastHarmony) then
-            Bar:Point("LEFT", LastHarmony, "RIGHT", 2*BorderSize + FrameSpacing, 0)
+            Bar:SetPoint("LEFT", LastHarmony, "RIGHT", 2*BorderSize + FrameSpacing, 0)
         end
         LastHarmony = Bar
     end
@@ -304,9 +306,9 @@ local function CreateStaggerDisplay(self)
     Stagger:SetFrameLevel(0)
     Stagger:CreateBackdrop()
     Stagger:SetStatusBarTexture(T.GetTexture(C["Textures"]["General"]))
-    Stagger:Height(BMBarHeight)
-    Stagger:Point("BOTTOMLEFT", Power, "TOPLEFT", 0, FrameSpacing + 2*BorderSize)
-    Stagger:Point("BOTTOMRIGHT", Power, "TOPRIGHT", 0, FrameSpacing + 2*BorderSize)
+    Stagger:SetHeight(BMBarHeight)
+    Stagger:SetPoint("BOTTOMLEFT", Power, "TOPLEFT", 0, FrameSpacing + 2*BorderSize)
+    Stagger:SetPoint("BOTTOMRIGHT", Power, "TOPRIGHT", 0, FrameSpacing + 2*BorderSize)
 
     self.Stagger = Stagger
 end
@@ -318,15 +320,15 @@ local function OnSpecUpdate(self)
     Power:ClearAllPoints()
     if (Spec == BREWMASTER_SPEC_INDEX) then
         self.BrewDisplay:Enable()
-        Power:Height(BMBarHeight)
-        Power:Point("TOP", Panels.UnitFrameAnchor, 0, -(2*BMBarHeight + 5*BorderSize + 2*FrameSpacing))
+        Power:SetHeight(BMBarHeight)
+        Power:SetPoint("TOP", Panels.UnitFrameAnchor, 0, -(2*BMBarHeight + 5*BorderSize + 2*FrameSpacing))
     else
         self.BrewDisplay:Disable()
-        Power:Height(NormalBarHeight)
+        Power:SetHeight(NormalBarHeight)
         if (Spec == WINDWALKER_SPEC_INDEX) then
-            Power:Point("TOP", Panels.UnitFrameAnchor, 0, -(NormalBarHeight + 3*BorderSize + FrameSpacing))
+            Power:SetPoint("TOP", Panels.UnitFrameAnchor, 0, -(NormalBarHeight + 3*BorderSize + FrameSpacing))
         else
-            Power:Point("BOTTOM", Panels.UnitFrameAnchor, "BOTTOM", 0, BorderSize)
+            Power:SetPoint("BOTTOM", Panels.UnitFrameAnchor, "BOTTOM", 0, BorderSize)
         end
     end
 end

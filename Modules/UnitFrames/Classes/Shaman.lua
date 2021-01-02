@@ -12,7 +12,7 @@ UnitFrames.EditClassFeatures["SHAMAN"] = function(self)
     if (C.UnitFrames.TotemBar) then
         local Bar = self.Totems
 
-        Bar:Width(ufWidth)
+        Bar:SetWidth(ufWidth)
         Bar.Override = nil
 
         for i = 1, MAX_TOTEMS do
@@ -20,7 +20,7 @@ UnitFrames.EditClassFeatures["SHAMAN"] = function(self)
 
             Bar[i]:Kill()
             Bar[i] = CreateFrame("Frame", "TukuiTotemBarSlot"..i, Bar)
-            Bar[i]:Size(30)
+            Bar[i]:SetSize(30, 30)
             Bar[i]:EnableMouse(true)
             Bar[i]:SetFrameLevel(Health:GetFrameLevel())
             Bar[i]:IsMouseEnabled(true)
@@ -28,9 +28,9 @@ UnitFrames.EditClassFeatures["SHAMAN"] = function(self)
             Bar[i]:SetBackdropColor(0, 0, 0)
 
             if (i == 1) then
-                Bar[i]:Point("BOTTOMLEFT", Bar, "BOTTOMLEFT", 0, 0)
+                Bar[i]:SetPoint("BOTTOMLEFT", Bar, "BOTTOMLEFT", 0, 0)
             else
-                Bar[i]:Point("LEFT", Bar[i-1], "RIGHT", ufSpacing, 0)
+                Bar[i]:SetPoint("LEFT", Bar[i-1], "RIGHT", ufSpacing, 0)
             end
 
             Bar[i].Cooldown = CreateFrame("Cooldown", nil, Bar[i])

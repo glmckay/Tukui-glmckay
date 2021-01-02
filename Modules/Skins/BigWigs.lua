@@ -39,7 +39,7 @@ local function StyleBar(bar)
     local Icon = bar.candyBarIconFrame
 
     Backdrop:SetOutside(bar)
-    Backdrop:SetTemplate()
+    -- Backdrop:SetTemplate()
     Backdrop:Show()
 
     local Tex = Icon.icon
@@ -48,11 +48,11 @@ local function StyleBar(bar)
     Icon:Show()
     Icon:ClearAllPoints()
     Icon:SetPoint("RIGHT", bar, "LEFT", -(FrameSpacing + 2*BorderSize), 0)
-    Icon:SetSize(bar:GetHeight(), bar:GetHeight())
+    Icon:SetSize(bar:GetHeight(, bar:GetHeight(), bar:GetHeight())
     bar:Set("bigwigs:restoreicon", Tex)
 
     local IconBd = bar.candyBarIconFrameBackdrop
-    IconBd:SetTemplate()
+    -- IconBd:SetTemplate()
     IconBd:SetOutside(Icon)
     IconBd:Show()
 end

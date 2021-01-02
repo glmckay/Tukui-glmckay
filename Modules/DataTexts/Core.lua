@@ -1,6 +1,6 @@
 local T, C, L = Tukui:unpack()
 
-local TukuiDT = T["DataTexts"]
+local DataTexts = T["DataTexts"]
 local Panels = T["Panels"]
 
 local FadeOutAlpha = 0.4
@@ -21,14 +21,14 @@ local function EditAnchors(self)
 
         Frame:ClearAllPoints()
         if (i == 3) then
-            Frame:Width(width*2)
-            Frame:Point("CENTER", DataTextCenter)
+            Frame:SetWidth(width*2)
+            Frame:SetPoint("CENTER", DataTextCenter)
         else
-            Frame:Width(width*3)
+            Frame:SetWidth(width*3)
             if (i < 3) then
-                Frame:Point("CENTER", DataTextCenter, "LEFT", width*(i*3-1), 0)
+                Frame:SetPoint("CENTER", DataTextCenter, "LEFT", width*(i*3-1), 0)
             else
-                Frame:Point("CENTER", DataTextCenter, "RIGHT", -width*((6-i)*3-1), 0)
+                Frame:SetPoint("CENTER", DataTextCenter, "RIGHT", -width*((6-i)*3-1), 0)
             end
         end
     end
@@ -38,7 +38,7 @@ end
 -- For now just put it on the left (maybe eventually put firends/guild on left and others
 --  at usual tooltip location)
 local function GetTooltipAnchor(self)
-    return T["Panels"].DataTextLeft, "ANCHOR_CURSOR", 0, T.Scale(5)
+    return DataTexts.Panels.Left, "ANCHOR_CURSOR", 0, 4
 end
 
 
@@ -60,25 +60,29 @@ end
 
 
 local function EnableEdits(self)
-    for name,dt in pairs(self["Texts"]) do
+    for name,dt in pairs(self["DataTexts"]) do
         if (dt.Text) then
             HookMouseOver(dt)
         end
         dt.GetTooltipAnchor = GetTooltipAnchor
     end
+
+    for _, Panel in pairs(self.Panels) do
+        T.Toolkit.Functions.HideBackdrop(Panel)
+    end
 end
 
 -- Change default datatext positions
-function TukuiDT:AddDefaults()
-    TukuiData[GetRealmName()][UnitName("player")].Texts = {}
-    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.Guild] = {true, 2}
-    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.FPSAndMS] = {true, 1}
-    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.Time] = {true, 3}
-    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.Friends] = {true, 4}
-    TukuiData[GetRealmName()][UnitName("player")].Texts[L.DataText.Gold] = {true, 5}
+function DataTexts:AddDefaults()
+    TukuiData[GetRealmName()][UnitName("player")].DataTexts = {}
+    TukuiData[GetRealmName()][UnitName("player")].DataTexts["Guild"] = {true, 2}
+    TukuiData[GetRealmName()][UnitName("player")].DataTexts["System"] = {true, 1}
+    TukuiData[GetRealmName()][UnitName("player")].DataTexts["Time"] = {true, 3}
+    TukuiData[GetRealmName()][UnitName("player")].DataTexts["Friends"] = {true, 4}
+    TukuiData[GetRealmName()][UnitName("player")].DataTexts["Character"] = {true, 5}
 end
 
 
-hooksecurefunc(TukuiDT, "Enable", EnableEdits)
-hooksecurefunc(TukuiDT, "CreateAnchors", EditAnchors)
+hooksecurefunc(DataTexts, "Enable", EnableEdits)
+hooksecurefunc(DataTexts, "CreateAnchors", EditAnchors)
 

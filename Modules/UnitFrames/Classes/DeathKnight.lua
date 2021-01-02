@@ -22,12 +22,11 @@ UnitFrames.EditClassFeatures["DEATHKNIGHT"] = function(self)
     local Runes = self.Runes
     local TotalWidth = Panels.CenterPanelWidth - 2*BorderSize
 
-    Runes:SetBackdrop({})
     Runes:SetParent(Power)
     Runes:SetFrameLevel(0)
     Runes:ClearAllPoints()
-    Runes:Size(TotalWidth, BarHeight)
-    Runes:Point("TOP", Panels.UnitFrameAnchor, 0, -BorderSize)
+    Runes:SetSize(TotalWidth, BarHeight)
+    Runes:SetPoint("TOP", Panels.UnitFrameAnchor, 0, -BorderSize)
 
     local EffectiveWidth = TotalWidth - 5*(2*BorderSize + FrameSpacing)
     local BarWidth = math.floor(EffectiveWidth / 6)
@@ -35,15 +34,15 @@ UnitFrames.EditClassFeatures["DEATHKNIGHT"] = function(self)
 
     for i,Rune in ipairs(Runes) do
         Rune:CreateBackdrop()
-        Rune:Height(BarHeight)
+        Rune:SetHeight(BarHeight)
         if (i == 1) then
-            Rune:Width(EffectiveWidth - 5*BarWidth)
+            Rune:SetWidth(EffectiveWidth - 5*BarWidth)
         else
-            Rune:Width(BarWidth)
+            Rune:SetWidth(BarWidth)
         end
 
         if (LastRune) then
-            Rune:Point("LEFT", LastRune, "RIGHT", 2*BorderSize + FrameSpacing, 0)
+            Rune:SetPoint("LEFT", LastRune, "RIGHT", 2*BorderSize + FrameSpacing, 0)
         end
         LastRune = Rune
     end

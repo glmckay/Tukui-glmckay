@@ -12,6 +12,8 @@ local DistanceFromMinimap = 3
 
 local BorderSize = C.General.BorderSize
 
+local Scale = T.Toolkit.Functions.Scale
+
 
 -- Long note:
 --  Auras are "secure objects" so their size is protected in combat.
@@ -29,7 +31,7 @@ function TukuiAuras:CreateHeaders()
     local InitConfigFcn = string.format([[
         self:SetWidth(%d)
         self:SetHeight(%d)
-    ]], T.Scale(AuraSize), T.Scale(AuraSize))
+    ]], Scale(AuraSize), Scale(AuraSize))
 
     local TempHideBuffs = C.Auras.HideBuffs
     local TempHideDebuffs = C.Auras.HideDebuffs
@@ -40,12 +42,12 @@ function TukuiAuras:CreateHeaders()
     self:OriginalCreateHeaders()
 
     for _, Header in ipairs(Headers) do
-        Header:SetAttribute("minHeight", T.Scale(BuffsMinHeight))
-        Header:SetAttribute("xOffset", -T.Scale(AuraSize + AuraSpacing))
-        Header:SetAttribute("wrapYOffset", -T.Scale(AuraSize + RowSpacing))
+        Header:SetAttribute("minHeight", Scale(BuffsMinHeight))
+        Header:SetAttribute("xOffset", -Scale(AuraSize + AuraSpacing))
+        Header:SetAttribute("wrapYOffset", -Scale(AuraSize + RowSpacing))
 
-        Header:SetAttribute("minWidth", C["Auras"].BuffsPerRow * T.Scale(AuraSize + AuraSpacing))
-        Header:Size(AuraSize)
+        Header:SetAttribute("minWidth", C["Auras"].BuffsPerRow * Scale(AuraSize + AuraSpacing))
+        Header:SetSize(AuraSize, AuraSize)
 
         Header:SetAttribute("initialconfigfunction", InitConfigFcn)
     end
@@ -57,7 +59,7 @@ function TukuiAuras:CreateHeaders()
     C.Auras.HideDebuffs = TempHideDebuffs
 
     if (not C.Auras.HideBuffs) then
-        Buffs:Point("TOPRIGHT", Minimap, "TOPLEFT", -(DistanceFromMinimap + BorderSize), BorderSize)
+        Buffs:SetPoint("TOPRIGHT", Minimap, "TOPLEFT", -(DistanceFromMinimap + BorderSize), BorderSize)
         Buffs:SetAttribute("filter", "HELPFUL")
         Buffs:SetAttribute("includeWeapons", 1)
         Buffs:Show()
@@ -67,9 +69,9 @@ function TukuiAuras:CreateHeaders()
 
     if (not C.Auras.HideDebuffs) then
         if (C.Auras.HideBuffs) then
-            Debuffs:Point("TOPRIGHT", Minimap, "TOPLEFT", -(DistanceFromMinimap + BorderSize), BorderSize)
+            Debuffs:SetPoint("TOPRIGHT", Minimap, "TOPLEFT", -(DistanceFromMinimap + BorderSize), BorderSize)
         else
-            Debuffs:Point("TOP", Buffs, "BOTTOM", 0, -math.max(RowSpacing, (MinimapSize - BuffsMinHeight - AuraSize)))
+            Debuffs:SetPoint("TOP", Buffs, "BOTTOM", 0, -math.max(RowSpacing, (MinimapSize + 2*BorderSize - BuffsMinHeight - AuraSize)))
         end
 
         Debuffs:SetAttribute("filter", "HARMFUL")
@@ -83,7 +85,7 @@ function TukuiAuras:CreateHeaders()
 local function EditSkin(self)
     local Holder = self.Holder
     if (Holder) then
-        Holder:Width(AuraSize)
+        Holder:SetWidth(AuraSize)
     end
 end
 

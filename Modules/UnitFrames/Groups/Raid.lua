@@ -9,7 +9,7 @@ local FrameSpacing = C["General"].FrameSpacing
 
 UnitFrames.GridTotalHeight = 234
 UnitFrames.GridMaxHeight = 60
-UnitFrames.GridWidth = 101
+UnitFrames.GridWidth = 170
 
 
 UnitFrames.ListMaxHeight = 36
@@ -17,30 +17,31 @@ UnitFrames.ListTotalHeight = 720
 UnitFrames.ListLargeWidth = 160
 UnitFrames.ListSmallWidth = 100
 
--- UnitFrames.ListMinWidth = T.Scale(97)
--- UnitFrames.ListMinHeight = T.Scale(17)
--- UnitFrames.ListWidthIncr = T.Scale(9)
--- UnitFrames.ListHeightIncr = T.Scale(3)
+-- UnitFrames.ListMinWidth = 97
+-- UnitFrames.ListMinHeight = 17
+-- UnitFrames.ListWidthIncr = 9
+-- UnitFrames.ListHeightIncr = 3
 
 
 local function RaidDebuffsShow(self)
-    local Parent = self:GetParent()
-    local Name = Parent.Name
-    Name:ClearAllPoints()
-    Name:Point("LEFT", self, "RIGHT", 5, 0)
+    local Name = self.Name
+    if Name then
+        Name:ClearAllPoints()
+        Name:SetPoint("LEFT", self, "RIGHT", 5, 0)
+    end
 end
 
 local function RaidDebuffsHide(self)
-    local Parent = self:GetParent()
-    local Name = Parent.Name
-    Name:ClearAllPoints()
-    Name:Point("LEFT", Parent, "RIGHT", 5, 0)
+    local Name = self.Name
+    if Name then
+        Name:ClearAllPoints()
+        Name:SetPoint("LEFT", Parent, "RIGHT", 5, 0)
+    end
 end
 
 local function UpdateFrameWidth(self, w)
-    local innerWidth = w - 2*T.Scale(BorderSize)
+    local innerWidth = w - 2*BorderSize
     local HealthPrediction = self.HealthPrediction
-    HealthPrediction.absorbBar:SetWidth(innerWidth)
     HealthPrediction.myBar:SetWidth(innerWidth)
     HealthPrediction.otherBar:SetWidth(innerWidth)
 end
@@ -49,15 +50,15 @@ local function UpdateListNameAndDebuffs(self, h)
     local RaidDebuffs = self.RaidDebuffs
     local Name = self.Name
 
-    if (h == T.Scale(UnitFrames.ListMaxHeight)) then
+    if (h == UnitFrames.ListMaxHeight) then
         Name:ClearAllPoints()
-        Name:Point("CENTER", self, "CENTER")
+        Name:SetPoint("CENTER", self, "CENTER")
 
         RaidDebuffs:SetScript("OnShow", nil)
         RaidDebuffs:SetScript("OnHide", nil)
     else
         Name:ClearAllPoints()
-        Name:Point("LEFT", self, "RIGHT", 5, 0)
+        Name:SetPoint("LEFT", self, "RIGHT", 5, 0)
 
         RaidDebuffs:SetScript("OnShow", RaidDebuffsShow)
         RaidDebuffs:SetScript("OnHide", RaidDebuffsHide)
@@ -75,7 +76,7 @@ local function UpdateFrameHeight(self, h)
     if (self.FrameStyle == "LIST") then
         UpdateListNameAndDebuffs(self, h)
 
-        local innerHeight = h - 2*T.Scale(BorderSize)
+        local innerHeight = h - 2*BorderSize
         self.RaidDebuffs:SetWidth(h)
         self.RaidDebuffs:SetHeight(h)
     end
@@ -94,22 +95,22 @@ local function UpdateFrameStyle(self, style)
             RaidDebuffs:SetScript("OnHide", nil)
 
             RaidDebuffs:ClearAllPoints()
-            RaidDebuffs:Point("CENTER", self, "CENTER", 0, 0)
+            RaidDebuffs:SetPoint("CENTER", self, "CENTER", 0, 0)
             RaidDebuffs:SetWidth(24)
             RaidDebuffs:SetHeight(24)
 
             Name:ClearAllPoints()
-            Name:Point("BOTTOM", self, "CENTER", 0, 2)
+            Name:SetPoint("BOTTOM", self, "CENTER", 0, 2)
             self.Health.Value:Show()
 
             ReadyCheck:ClearAllPoints()
-            ReadyCheck:Point("CENTER")
+            ReadyCheck:SetPoint("CENTER")
 
             RaidIcon:ClearAllPoints()
-            RaidIcon:Point("CENTER", self, "TOP")
+            RaidIcon:SetPoint("CENTER", self, "TOP")
         else
             RaidDebuffs:ClearAllPoints()
-            RaidDebuffs:Point("LEFT", self, "RIGHT", FrameSpacing, 0)
+            RaidDebuffs:SetPoint("LEFT", self, "RIGHT", FrameSpacing, 0)
 
             local size = self:GetHeight()
             RaidDebuffs:SetWidth(size)
@@ -117,10 +118,10 @@ local function UpdateFrameStyle(self, style)
             self.Health.Value:Hide()
 
             ReadyCheck:ClearAllPoints()
-            ReadyCheck:Point("RIGHT", self, "RIGHT", -4, 0)
+            ReadyCheck:SetPoint("RIGHT", self, "RIGHT", -4, 0)
 
             RaidIcon:ClearAllPoints()
-            RaidIcon:Point("LEFT", self, "LEFT", 4, 0)
+            RaidIcon:SetPoint("LEFT", self, "LEFT", 4, 0)
         end
         self.FrameStyle = style
     end
@@ -130,7 +131,7 @@ local function EditGridRaidFrame(self)
     local Health = self.Health
 
     self.Panel:Kill()
-    self:SetTemplate()
+    -- self:SetTemplate()
 
     -- Frame to overlay text above heal prediction
     local OverlayFrame = CreateFrame("Frame", nil, self)
@@ -141,13 +142,14 @@ local function EditGridRaidFrame(self)
     Health:SetFrameLevel(3)
 
     Health.Value:ClearAllPoints()
-    Health.Value:Point("TOP", self, "CENTER", 0, -2)
+    Health.Value:SetPoint("TOP", self, "CENTER", 0, -2)
 
     self.Power:Kill()
     self.Power = nil
 
     local Name = OverlayFrame:CreateFontString(nil, "OVERLAY")
     Name:SetFontObject(ufFont)
+    Name:SetPoint("CENTER")
     if (C.UnitFrames.DarkTheme) then
         Health:SetStatusBarColor(.25, .25, .25)
         self:Tag(Name, "[Tukui:GetNameColor][Tukui:NameMedium]")
@@ -181,7 +183,7 @@ local function EditGridRaidFrame(self)
     local ReadyCheck = self.ReadyCheckIndicator
     ReadyCheck:SetParent(OverlayFrame)
     ReadyCheck:ClearAllPoints()
-    ReadyCheck:Point("CENTER", OverlayFrame)
+    ReadyCheck:SetPoint("CENTER", OverlayFrame)
 
     self.RaidDebuffs:Hide()
 

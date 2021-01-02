@@ -4,22 +4,26 @@ local Reputation = T["Miscellaneous"].Reputation
 local Experience = T["Miscellaneous"].Experience
 local BorderSize = C["General"].BorderSize
 local FrameSpacing = C["General"].FrameSpacing
+local NumBars = C["Misc"]["NumExpBars"] or 2
 local Noop = function() end
 
-Reputation.NumBars = math.min(2, Experience.NumBars)
 
 local function EditBars(self)
     for i = 1, self.NumBars do
         local RepBar = self["RepBar"..i]
 
-        RepBar:SetStatusBarTexture(T.GetTexture(C["Textures"].General))
-        RepBar:SetOrientation("Horizontal")
+        if (i > 2 - NumBars) then
+            RepBar:Kill()
+        else
+            RepBar:SetStatusBarTexture(T.GetTexture(C["Textures"].General))
+            RepBar:SetOrientation("Horizontal")
 
-        local anchorFrame = ((i == 1 and Minimap) or self["RepBar"..i-1])
-        RepBar:ClearAllPoints()
-        RepBar:Point("TOPLEFT", anchorFrame, "BOTTOMLEFT", 0, -(BorderSize*2 + FrameSpacing))
-        RepBar:Point("TOPRIGHT", anchorFrame, "BOTTOMRIGHT", 0, -(BorderSize*2 + FrameSpacing))
-        RepBar:Height(Experience.BarHeight)
+            local anchorFrame = ((i == 1 and Minimap) or self["RepBar"..i-1])
+            RepBar:ClearAllPoints()
+            RepBar:SetPoint("TOPLEFT", anchorFrame, "BOTTOMLEFT", 0, -(BorderSize*2 + FrameSpacing))
+            RepBar:SetPoint("TOPRIGHT", anchorFrame, "BOTTOMRIGHT", 0, -(BorderSize*2 + FrameSpacing))
+            RepBar:SetHeight(Experience.BarHeight)
+        end
     end
 end
 

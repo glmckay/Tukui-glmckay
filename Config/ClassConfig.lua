@@ -10,10 +10,6 @@ if (T.MyClass == "DEATHKNIGHT") then
     }
 end
 
-if (T.MyClass == "DEMONHUNTER") then
-    C["Misc"]["NumExpBars"] = 2
-end
-
 
 if (T.MyClass == "MAGE") then
     C["Misc"]["NumExpBars"] = 2

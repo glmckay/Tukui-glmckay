@@ -9,10 +9,6 @@ local NameFont = T.GetFont(C["UnitFrames"].Font)
 local function EditPetTotCommon(self)
     local Health = self.Health
 
-    self.Panel:Kill()
-    self:SetTemplate()
-    self:SetBackdropColor(0, 0, 0)
-
     -- Health
     Health:ClearAllPoints()
     Health:SetInside(self)
@@ -28,7 +24,7 @@ local function EditPetTotCommon(self)
 
     -- Create new Name since we killed the panel
     local Name = Health:CreateFontString(nil, "OVERLAY")
-    Name:Point("CENTER", Health, "CENTER", 0, 0)
+    Name:SetPoint("CENTER", Health, "CENTER", 0, 0)
     Name:SetJustifyH("CENTER")
     Name:SetFontObject(NameFont)
 
@@ -42,7 +38,7 @@ local function EditPetTotCommon(self)
 
     local RaidIcon = self.RaidTargetIndicator
     RaidIcon:ClearAllPoints()
-    RaidIcon:Point("CENTER", self, "BOTTOM", 0, 12)
+    RaidIcon:SetPoint("CENTER", self, "TOP", 0, 0)
 end
 
 hooksecurefunc(TukuiUF, "TargetOfTarget", EditPetTotCommon)

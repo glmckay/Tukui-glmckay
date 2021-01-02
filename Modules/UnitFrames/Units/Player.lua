@@ -28,32 +28,7 @@ local MeleeCastBarHeight = 14
 local RangedCastBarHeight = FrameHeight - RangedPowerHeight - 4*BorderSize - FrameSpacing
 
 
-local function PlayerPostUpdatePower(self, unit, min, max)
-    local pType, pToken = UnitPowerType(unit)
-
-    if (UnitIsDead(unit) or UnitIsGhost(unit)) then
-        self.Value:SetText()
-        if (self.ExtraValue) then self.ExtraValue:SetText() end
-    else
-        if (pType == 0) then -- mana
-            local value = ShortValue(min)
-            self.Value:SetText(value)
-            if (self.ExtraValue) then self.ExtraValue:SetText() end
-        else
-            if ((pType == 3 and min == max) or (min == 0)) then -- pType 3 is energy
-                self.Value:SetText()
-            else
-                self.Value:SetText(min)
-            end
-            if (self.ExtraValue) then self.ExtraValue:SetText(min) end
-        end
-    end
-end
-
-
 local function EditPlayer(self)
-    self.Panel:Kill()
-    self:SetTemplate()
 
     local Health = self.Health
     local Power = self.Power
@@ -70,81 +45,73 @@ local function EditPlayer(self)
 
     -- Health
     Health:ClearAllPoints()
-    Health:Point("TOPLEFT", self, BorderSize, -BorderSize)
-    Health:Point("TOPRIGHT", self, -BorderSize, -BorderSize)
-    Health:Height(HealthHeight - AdditionalPowerHeight - BorderSize)
+    Health:SetPoint("TOPLEFT", self, BorderSize, -BorderSize)
+    Health:SetPoint("TOPRIGHT", self, -BorderSize, -BorderSize)
+    Health:SetHeight(HealthHeight - AdditionalPowerHeight - BorderSize)
 
     Health.Background:Kill()
 
     Health.Value:SetParent(OverlayFrame)
     Health.Value:SetFontObject(NumberFont)
     Health.Value:ClearAllPoints()
-    Health.Value:Point("RIGHT", Health, "RIGHT", -2, 0)
-
-    Health.Percent = OverlayFrame:CreateFontString(nil, "OVERLAY")
-    Health.Percent:SetFontObject(BigNumberFont)
-    Health.Percent:Point("LEFT", Health, "TOPLEFT", 2, 0)
-
-    Health.PostUpdate = TukuiUF.PlayerTargetPostUpdateHealth
+    Health.Value:SetPoint("RIGHT", Health, "RIGHT", -2, 0)
 
     -- Power
-    Power:Width(CenterBarWidth)
+    Power:SetWidth(CenterBarWidth)
     Power:CreateBackdrop()
+    Power.Backdrop:SetOutside(Power)
     Power.Background:Kill()
 
-    Power.Value:SetParent(OverlayFrame)
-    Power.Value:SetFontObject(NumberFont)
+    -- Power.Value:SetParent(OverlayFrame)
+    Power.Value:SetFontObject(BigNumberFont)
     Power.Value:ClearAllPoints()
-    Power.Value:Point("BOTTOMLEFT", self, "BOTTOMLEFT", 2, 1)
-    Power.PostUpdate = PlayerPostUpdatePower
+    Power.Value:SetPoint("CENTER", Power, "TOP", 0, 0)
+    Power.PostUpdate = nil
 
-    Power.Prediction:Width(FrameWidth - 2*BorderSize)
+    Power:SetScript("OnShow", function()
+        Power.Value:UpdateTag()
+    end)
 
-    -- Create a new string for the detached power bar (the usual string will stay on the frame when out of combat)
-    Power.ExtraValue = Power:CreateFontString(nil, "OVERLAY")
-    Power.ExtraValue:SetFontObject(BigNumberFont)
-    Power.ExtraValue:Point("CENTER", Power, "TOP", 0, 0)
+    Power.Prediction:SetWidth(FrameWidth - 2*BorderSize)
 
-    Power.Value:SetParent(OverlayFrame)
 
     RegisterStateDriver(Power, "visibility", "[combat][mod:shift]show;hide")
-    Power:SetScript("OnShow", function() Power.Value:Hide() end)
-    Power:SetScript("OnHide", function() Power.Value:Show() end)
 
     -- AdditionalPower
-    AdditionalPower:SetBackdrop({})
     AdditionalPower:ClearAllPoints()
-    AdditionalPower:Height(AdditionalPowerHeight)
-    AdditionalPower:Point("BOTTOMLEFT", self, BorderSize, BorderSize)
-    AdditionalPower:Point("BOTTOMRIGHT", self, -BorderSize, BorderSize)
+    AdditionalPower:SetHeight(AdditionalPowerHeight)
+    AdditionalPower:SetPoint("BOTTOMLEFT", self, BorderSize, BorderSize)
+    AdditionalPower:SetPoint("BOTTOMRIGHT", self, -BorderSize, BorderSize)
 
     -- Repurpose the background as a border between the health and additional power bars
     AdditionalPower.Background:ClearAllPoints()
-    AdditionalPower.Background:Size(FrameWidth, BorderSize)
-    AdditionalPower.Background:Point("BOTTOM", AdditionalPower, "TOP")
+    AdditionalPower.Background:SetSize(FrameWidth, BorderSize)
+    AdditionalPower.Background:SetPoint("BOTTOM", AdditionalPower, "TOP")
     AdditionalPower.Background:SetColorTexture(unpack(C.General.BorderColor))
 
     -- Fix health height when shown/hidden
     AdditionalPower:SetScript("OnShow", function()
-        Health:Height(HealthHeight - AdditionalPowerHeight - BorderSize)
+        Health:SetHeight(HealthHeight - AdditionalPowerHeight - BorderSize)
     end)
     AdditionalPower:SetScript("OnHide", function()
-        Health:Height(HealthHeight)
+        Health:SetHeight(HealthHeight)
     end)
 
+    self.AdditionalPower = AdditionalPower
+
     -- CastBar
-    CastBar:Width(CenterBarWidth)
-    CastBar:SetBackdrop({})
+    CastBar:SetWidth(CenterBarWidth)
     CastBar:CreateBackdrop()
+    CastBar.Backdrop:SetOutside()
     CastBar.Background:Kill()
 
     CastBar:ClearAllPoints()
     if (C.UnitFrames.UnlinkCastBar) then
-        CastBar:Point("TOP", Panels.UnitFrameAnchor, "TOP", 0, -BorderSize)
-        CastBar:Size(CenterBarWidth, CastBarHeight)
+        CastBar:SetPoint("TOP", Panels.UnitFrameAnchor, "TOP", 0, -BorderSize)
+        CastBar:SetSize(CenterBarWidth, MeleeCastBarHeight)
         CastBar:SetFrameLevel(Power:GetFrameLevel())
     else
-        CastBar:Point("TOP", self, "BOTTOM", 0, -FrameSpacing)
+        CastBar:SetPoint("TOP", self, "BOTTOM", 0, -FrameSpacing)
     end
 
     if (C.UnitFrames.CastBarIcon) then
@@ -154,7 +121,7 @@ local function EditPlayer(self)
 
     CastBar.Time:SetFontObject(NumberFont)
     CastBar.Time:ClearAllPoints()
-    CastBar.Time:Point("RIGHT", CastBar, "RIGHT", -2, 0)
+    CastBar.Time:SetPoint("RIGHT", CastBar, "RIGHT", -2, 0)
 
     CastBar.Text:SetFontObject(NumberFont)
 
@@ -165,14 +132,14 @@ local function EditPlayer(self)
         for name,bar in pairs(HealthPrediction) do
             if (name ~= 'maxOverflow') then
                 bar:SetFrameLevel(Health:GetFrameLevel())
-                bar:Width(FrameWidth - 2*BorderSize)
+                bar:SetWidth(FrameWidth - 2*BorderSize)
             end
         end
     end
 
     Combat:ClearAllPoints()
-    Combat:Point("CENTER", Health, "CENTER")
-    Combat:Size(24)
+    Combat:SetPoint("CENTER", Health, "CENTER")
+    Combat:SetSize(24, 24)
     Combat:SetVertexColor(1, 1, 1)
 
     self.LeaderIndicator:Kill()
@@ -180,6 +147,8 @@ local function EditPlayer(self)
 
     self.MasterLooterIndicator:Kill()
     self.MasterLooterIndicator = nil
+
+    self:Tag(Power.Value, C.UnitFrames.PlayerPowerTag.Value)
 
     if (TukuiUF.EditClassFeatures[T.MyClass]) then
         TukuiUF.EditClassFeatures[T.MyClass](self)
@@ -198,40 +167,40 @@ function TukuiUF:SetPlayerProfile(role, isRanged)
     if (isRanged) then
         -- Position power bar so that some other resource bar can be comfortably placed above
         Power:ClearAllPoints()
-        Power:Height(RangedPowerHeight)
-        Power:Point("BOTTOM", Panels.UnitFrameAnchor, "BOTTOM", 0, BorderSize)
+        Power:SetHeight(RangedPowerHeight)
+        Power:SetPoint("BOTTOM", Panels.UnitFrameAnchor, "BOTTOM", 0, BorderSize)
 
         CenterActionBars[1]:ClearAllPoints()
-        CenterActionBars[1]:Point("TOP",Panels.UnitFrameAnchor, "BOTTOM", 0, -(BorderSize + FrameSpacing))
+        CenterActionBars[1]:SetPoint("TOP",Panels.UnitFrameAnchor, "BOTTOM", 0, -(BorderSize + FrameSpacing))
 
         CastBar:ClearAllPoints()
-        CastBar:Height(RangedCastBarHeight)
-        CastBar:Point("TOP", Panels.UnitFrameAnchor, "TOP", 0, -BorderSize)
+        CastBar:SetHeight(RangedCastBarHeight)
+        CastBar:SetPoint("TOP", Panels.UnitFrameAnchor, "TOP", 0, -BorderSize)
 
         CastBar.Text:ClearAllPoints()
         CastBar.Text:SetHeight(CastBar:GetHeight())
-        CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
+        CastBar.Text:SetPoint("LEFT", CastBar, "LEFT", 2, 0)
         CastBar.Text:SetWidth(CenterBarWidth - 80)
         CastBar.Text:SetJustifyH("LEFT")
 
         CastBar.Time:Show()
     else
         Power:ClearAllPoints()
-        Power:Height(MeleePowerHeight)
-        Power:Point("TOP", Panels.UnitFrameAnchor, 0, -(MeleePowerHeight + 3*BorderSize + FrameSpacing))
+        Power:SetHeight(MeleePowerHeight)
+        Power:SetPoint("TOP", Panels.UnitFrameAnchor, 0, -(MeleePowerHeight + 3*BorderSize + FrameSpacing))
 
         CenterActionBars[1]:ClearAllPoints()
-        CenterActionBars[1]:Point("TOP", Power, "BOTTOM", 0, -(BorderSize + FrameSpacing))
+        CenterActionBars[1]:SetPoint("TOP", Power, "BOTTOM", 0, -(BorderSize + FrameSpacing))
 
         CastBar:ClearAllPoints()
-        CastBar:Height(MeleeCastBarHeight)
-        CastBar:Point("TOP", CenterActionBars[2], "BOTTOM", 0, -(FrameSpacing + BorderSize))
+        CastBar:SetHeight(MeleeCastBarHeight)
+        CastBar:SetPoint("TOP", CenterActionBars[2], "BOTTOM", 0, -(FrameSpacing + BorderSize))
 
         CastBar.Text:ClearAllPoints()
-        CastBar.Text:Height(10)
-        CastBar.Text:Point("RIGHT", CastBar, "RIGHT", -2, 0)
-        CastBar.Text:Point("LEFT", CastBar, "LEFT", 2, 0)
-        CastBar.Text:Point("TOP", CastBar, "CENTER", 0, 0)
+        CastBar.Text:SetHeight(10)
+        CastBar.Text:SetPoint("RIGHT", CastBar, "RIGHT", -2, 0)
+        CastBar.Text:SetPoint("LEFT", CastBar, "LEFT", 2, 0)
+        CastBar.Text:SetPoint("TOP", CastBar, "CENTER", 0, 0)
         CastBar.Text:SetJustifyH("CENTER")
 
         CastBar.Time:Hide()

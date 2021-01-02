@@ -54,5 +54,5 @@ local UldirDebuffs = {
 
 
 for _,debuff in ipairs(UldirDebuffs) do
-    TukuiUnitFrames.DebuffsTracking["RaidDebuffs"]["spells"][debuff] = Defaults()
+    TukuiUnitFrames.DebuffsTracking["PvE"]["spells"][debuff] = Defaults()
 end
